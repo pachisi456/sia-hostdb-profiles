@@ -55,7 +55,7 @@ func (c *Contractor) managedInterruptContractMaintenance() {
 // managedMarkContractsUtility checks every active contract in the contractor and
 // figures out whether the contract is useful for uploading, and whehter the
 // contract should be renewed.
-func (c *Contractor) managedMarkContractsUtility() {
+func (c *Contractor) managedMarkContractsUtility() error {
 	// Pull a new set of hosts from the hostdb that could be used as a new set
 	// to match the allowance. The lowest scoring host of these new hosts will
 	// be used as a baseline for determining whether our existing contracts are
@@ -65,7 +65,7 @@ func (c *Contractor) managedMarkContractsUtility() {
 	c.mu.RUnlock()
 	hosts, err := c.hdb.RandomHosts(hostCount+minScoreHostBuffer, nil)
 	if err != nil {
-		return
+		return err
 	}
 
 	// Find the minimum score that a host is allowed to have to be considered
@@ -136,6 +136,7 @@ func (c *Contractor) managedMarkContractsUtility() {
 		c.contractUtilities[contract.ID] = utility
 		c.mu.Unlock()
 	}
+	return nil
 }
 
 // managedNewContract negotiates an initial file contract with the specified
