@@ -272,7 +272,10 @@ func (c *Contractor) threadedContractMaintenance() {
 
 	// Update the utility fields for this contract based on the most recent
 	// hostdb.
-	c.managedMarkContractsUtility()
+	if err := c.managedMarkContractsUtility(); err != nil {
+		c.log.Println("WARNING: wasn't able to mark contracts", err)
+		return
+	}
 
 	// Figure out which contracts need to be renewed, and while we have the
 	// lock, figure out the end height for the new contracts and also the amount
