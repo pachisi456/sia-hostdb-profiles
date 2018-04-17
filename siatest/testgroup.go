@@ -321,7 +321,7 @@ func synchronizationCheck(miner *TestNode, nodes map[*TestNode]struct{}) error {
 	for {
 		synced := true
 		for node := range nodes {
-			err := Retry(1200, 100*time.Millisecond, func() error {
+			err := Retry(600, 100*time.Millisecond, func() error {
 				ncg, err := node.ConsensusGet()
 				if err != nil {
 					return err
