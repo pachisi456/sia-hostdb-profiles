@@ -128,8 +128,8 @@ returns the set of constants in use.
   "roottarget": [0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   "rootdepth":  [255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255],
 
-  "maxadjustmentup":   "5/2",
-  "maxadjustmentdown": "2/5",
+  "maxtargetadjustmentup":   "5/2",
+  "maxtargetadjustmentdown": "2/5",
 
   "siacoinprecision": "1000000000000000000000000" // hastings per siacoin
 }
@@ -160,6 +160,7 @@ Consensus
 | Route                                                                       | HTTP verb |
 | --------------------------------------------------------------------------- | --------- |
 | [/consensus](#consensus-get)                                                | GET       |
+| [/consensus/blocks](#consensusblocks-get)                                   | GET       |
 | [/consensus/validate/transactionset](#consensusvalidatetransactionset-post) | POST      |
 
 For examples and detailed descriptions of request and response parameters,
@@ -178,6 +179,21 @@ returns information about the consensus set, such as the current block height.
   "target":       [0,0,0,0,0,0,11,48,125,79,116,89,136,74,42,27,5,14,10,31,23,53,226,238,202,219,5,204,38,32,59,165],
   "difficulty":   "1234"
 }
+```
+
+#### /consensus/blocks [GET]
+
+Returns the block for a given id or height.
+
+###### Query String Parameters
+One of the following parameters can be specified.
+```
+// BlockID of the requested block.
+id 
+
+// BlockHeight of the requested block.
+height
+
 ```
 
 #### /consensus/validate/transactionset [POST]
@@ -724,6 +740,7 @@ Renter
 | [/renter/download/*___siapath___](#renterdownloadsiapath-get)           | GET       |
 | [/renter/downloadasync/*___siapath___](#renterdownloadasyncsiapath-get) | GET       |
 | [/renter/rename/*___siapath___](#renterrenamesiapath-post)              | POST      |
+| [/renter/stream/*___siapath___](#renterstreamsiapath-get)               | GET       |
 | [/renter/upload/*___siapath___](#renteruploadsiapath-post)              | POST      |
 
 For examples and detailed descriptions of request and response parameters,
@@ -745,9 +762,11 @@ returns the current settings along with metrics on the renter's spending.
     }
   },
   "financialmetrics": {
-    "contractspending": "1234", // hastings
+    "contractfees":     "1234", // hastings
+    "contractspending": "1234", // hastings (deprecated, now totalallocated)
     "downloadspending": "5678", // hastings
     "storagespending":  "1234", // hastings
+    "totalallocated":   "1234", // hastings
     "uploadspending":   "5678", // hastings
     "unspent":          "1234"  // hastings
   },
@@ -941,6 +960,26 @@ newsiapath
 
 ###### Response
 standard success or error response. See
+[#standard-responses](#standard-responses).
+
+#### /renter/stream/*___siapath___ [GET]
+
+downloads a file using http streaming. This call blocks until the data is
+received.
+The streaming endpoint also uses caching internally to prevent siad from
+redownloading the same chunk multiple times when only parts of a file are
+requested at once. This might lead to a substantial increase in ram usage and
+therefore it is not recommended to stream multiple files in parallel at the
+moment. This restriction will be removed together with the caching once partial
+downloads are supported in the future.
+
+###### Path Parameters [(with comments)](/doc/api/Renter.md#path-parameters-1)
+```
+*siapath
+```
+
+###### Response
+standard success with the requested data in the body or error response. See
 [#standard-responses](#standard-responses).
 
 #### /renter/upload/*___siapath___ [POST]
