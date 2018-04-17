@@ -257,7 +257,7 @@ func (tn *TestNode) WaitForUploadRedundancy(rf *RemoteFile, redundancy float64) 
 		return errors.New("file is not tracked by renter")
 	}
 	// Wait until it reaches the redundancy
-	return Retry(600, 100*time.Millisecond, func() error {
+	return Retry(1200, 100*time.Millisecond, func() error {
 		file, err := tn.FileInfo(rf)
 		if err != nil {
 			return errors.AddContext(err, "couldn't retrieve FileInfo")

@@ -315,19 +315,39 @@ func synchronizationCheck(miner *TestNode, nodes map[*TestNode]struct{}) error {
 	if err != nil {
 		return err
 	}
-	for node := range nodes {
-		err := Retry(1200, 100*time.Millisecond, func() error {
-			ncg, err := node.ConsensusGet()
+	// Loop until all the blocks have the same CurrentBlock. If we need to mine
+	// a new block in between we need to repeat the check until no block was
+	// mined.
+	for {
+		synced := true
+		for node := range nodes {
+			err := Retry(1200, 100*time.Millisecond, func() error {
+				ncg, err := node.ConsensusGet()
+				if err != nil {
+					return err
+				}
+				// If the CurrentBlock's match we are done.
+				if mcg.CurrentBlock == ncg.CurrentBlock {
+					return nil
+				}
+				// If the miner's height is greater than the node's we need to
+				// wait a bit longer for them to sync.
+				if mcg.Height > ncg.Height {
+					return errors.New("the node didn't catch up to the miner's height")
+				}
+				// If the miner's height is smaller to the node's or equal to
+				// the node's but still doesn't match, it needs to mine a
+				// block.
+				synced = false
+				return errors.Compose(errors.New("the node's current block does not equal the miner's"),
+					miner.MineBlock())
+			})
 			if err != nil {
 				return err
 			}
-			if mcg.CurrentBlock != ncg.CurrentBlock {
-				return errors.New("the node's current block doesn't equal the miner's")
-			}
-			return nil
-		})
-		if err != nil {
-			return err
+		}
+		if synced {
+			break
 		}
 	}
 	return nil
