@@ -316,7 +316,7 @@ func synchronizationCheck(miner *TestNode, nodes map[*TestNode]struct{}) error {
 		return err
 	}
 	for node := range nodes {
-		err := Retry(100, 100*time.Millisecond, func() error {
+		err := Retry(600, 100*time.Millisecond, func() error {
 			ncg, err := node.ConsensusGet()
 			if err != nil {
 				return err
@@ -430,8 +430,12 @@ func (tg *TestGroup) AddNodes(nps ...node.NodeParams) error {
 	if err := fullyConnectNodes(nodes); err != nil {
 		return build.ExtendErr("failed to fully connect nodes", err)
 	}
-	// Fund nodes.
+	// Make sure the new nodes are synced.
 	miner := mapToSlice(tg.miners)[0]
+	if err := synchronizationCheck(miner, tg.nodes); err != nil {
+		return build.ExtendErr("synchronization check failed", err)
+	}
+	// Fund nodes.
 	if err := fundNodes(miner, newNodes); err != nil {
 		return build.ExtendErr("failed to fund new hosts", err)
 	}
