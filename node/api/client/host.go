@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/NebulousLabs/Sia/node/api"
+	"github.com/pachisi456/sia-hostdb-profiles/node/api"
 )
 
 // HostAnnouncePost uses the /host/announce endpoint to announce the host to

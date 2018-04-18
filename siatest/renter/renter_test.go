@@ -4,10 +4,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/NebulousLabs/Sia/modules"
-	"github.com/NebulousLabs/Sia/modules/renter"
-	"github.com/NebulousLabs/Sia/node"
-	"github.com/NebulousLabs/Sia/siatest"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/renter"
+	"github.com/pachisi456/sia-hostdb-profiles/node"
+	"github.com/pachisi456/sia-hostdb-profiles/siatest"
 	"github.com/NebulousLabs/fastrand"
 )
 

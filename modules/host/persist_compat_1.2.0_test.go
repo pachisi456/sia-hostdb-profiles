@@ -5,13 +5,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/modules"
-	"github.com/NebulousLabs/Sia/modules/consensus"
-	"github.com/NebulousLabs/Sia/modules/gateway"
-	"github.com/NebulousLabs/Sia/modules/transactionpool"
-	"github.com/NebulousLabs/Sia/modules/wallet"
-	"github.com/NebulousLabs/Sia/persist"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/consensus"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/gateway"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/transactionpool"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/wallet"
+	"github.com/pachisi456/sia-hostdb-profiles/persist"
 )
 
 const (

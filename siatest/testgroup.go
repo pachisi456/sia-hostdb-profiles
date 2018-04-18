@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/modules"
-	"github.com/NebulousLabs/Sia/node"
-	"github.com/NebulousLabs/Sia/node/api/client"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/node"
+	"github.com/pachisi456/sia-hostdb-profiles/node/api/client"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 	"github.com/NebulousLabs/errors"
 	"github.com/NebulousLabs/fastrand"
 )

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/NebulousLabs/Sia/build"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
 )
 
 // dummy types to test encoding

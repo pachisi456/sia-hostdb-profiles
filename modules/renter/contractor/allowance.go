@@ -4,7 +4,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/NebulousLabs/Sia/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
 )
 
 var (

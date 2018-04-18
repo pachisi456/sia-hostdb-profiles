@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/NebulousLabs/Sia/node/api"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/node/api"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 
 	"github.com/spf13/cobra"
 )

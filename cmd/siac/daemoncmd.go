@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/node/api"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/node/api"
 	"github.com/spf13/cobra"
 )
 

@@ -3,9 +3,9 @@ package consensus
 import (
 	"testing"
 
-	"github.com/NebulousLabs/Sia/node"
-	"github.com/NebulousLabs/Sia/siatest"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/node"
+	"github.com/pachisi456/sia-hostdb-profiles/siatest"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 )
 
 // TestApiHeight checks if the consensus api endpoint works

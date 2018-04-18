@@ -1,10 +1,10 @@
 package consensus
 
 import (
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
 
-	siasync "github.com/NebulousLabs/Sia/sync"
+	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
 	"github.com/coreos/bbolt"
 )
 

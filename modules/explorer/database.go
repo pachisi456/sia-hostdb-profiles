@@ -3,8 +3,8 @@ package explorer
 import (
 	"errors"
 
-	"github.com/NebulousLabs/Sia/encoding"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/encoding"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 
 	"github.com/coreos/bbolt"
 )

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/NebulousLabs/Sia/modules"
-	"github.com/NebulousLabs/Sia/persist"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/persist"
 )
 
 // dependencyErrMkdirAll is a dependency set that returns an error when MkdirAll

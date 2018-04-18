@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/NebulousLabs/Sia/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
 )
 
 // TestAddStorageFolder tries to add a storage folder to the contract manager,

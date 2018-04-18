@@ -1,8 +1,8 @@
 package client
 
 import (
-	"github.com/NebulousLabs/Sia/modules"
-	"github.com/NebulousLabs/Sia/node/api"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/node/api"
 	"github.com/NebulousLabs/errors"
 )
 

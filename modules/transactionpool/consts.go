@@ -3,9 +3,9 @@ package transactionpool
 import (
 	"time"
 
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/persist"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/persist"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 )
 
 // Consts related to the persisting structures of the transactoin pool.

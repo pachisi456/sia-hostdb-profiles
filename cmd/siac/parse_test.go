@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 )
 
 func TestParseFilesize(t *testing.T) {

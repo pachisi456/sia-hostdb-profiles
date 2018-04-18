@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/NebulousLabs/Sia/modules"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 )
 
 // A worker listens for work on a certain host.

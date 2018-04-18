@@ -3,7 +3,7 @@ package siatest
 import (
 	"testing"
 
-	"github.com/NebulousLabs/Sia/build"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
 )
 
 // TestCreateTestGroup tests the behavior of NewGroup.

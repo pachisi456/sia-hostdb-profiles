@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/NebulousLabs/Sia/encoding"
-	"github.com/NebulousLabs/Sia/modules"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/encoding"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 	"github.com/NebulousLabs/errors"
 	"github.com/NebulousLabs/fastrand"
 

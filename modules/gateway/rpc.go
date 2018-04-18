@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/encoding"
-	"github.com/NebulousLabs/Sia/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/encoding"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
 )
 
 // rpcID is an 8-byte signature that is added to all RPCs to tell the gatway

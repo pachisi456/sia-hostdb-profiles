@@ -12,7 +12,7 @@ import (
 	"math"
 	"math/big"
 
-	"github.com/NebulousLabs/Sia/build"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
 )
 
 type (

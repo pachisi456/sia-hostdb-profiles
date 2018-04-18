@@ -3,7 +3,7 @@ package miner
 import (
 	"testing"
 
-	"github.com/NebulousLabs/Sia/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
 )
 
 // TestIntegrationBlockHeightReorg checks that the miner has the correct block

@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/NebulousLabs/Sia/persist"
+	"github.com/pachisi456/sia-hostdb-profiles/persist"
 )
 
 // There's a global lock on cpu and memory profiling, because I'm not sure what

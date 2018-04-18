@@ -6,17 +6,17 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/crypto"
-	"github.com/NebulousLabs/Sia/modules"
-	"github.com/NebulousLabs/Sia/modules/consensus"
-	"github.com/NebulousLabs/Sia/modules/gateway"
-	"github.com/NebulousLabs/Sia/modules/miner"
-	// "github.com/NebulousLabs/Sia/modules/renter"
-	"github.com/NebulousLabs/Sia/modules/transactionpool"
-	"github.com/NebulousLabs/Sia/modules/wallet"
-	siasync "github.com/NebulousLabs/Sia/sync"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/crypto"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/consensus"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/gateway"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/miner"
+	// "github.com/pachisi456/sia-hostdb-profiles/modules/renter"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/transactionpool"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/wallet"
+	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 )
 
 // A hostTester is the helper object for host testing, including helper modules

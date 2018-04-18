@@ -3,7 +3,7 @@ package gateway
 import (
 	"net"
 
-	"github.com/NebulousLabs/Sia/build"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
 	"github.com/xtaci/smux"
 )
 

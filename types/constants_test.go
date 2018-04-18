@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	"github.com/NebulousLabs/Sia/build"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
 )
 
 // TestCheckBuildConstants checks that the required build constants have been

@@ -70,13 +70,13 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/crypto"
-	"github.com/NebulousLabs/Sia/modules"
-	"github.com/NebulousLabs/Sia/modules/host/contractmanager"
-	"github.com/NebulousLabs/Sia/persist"
-	siasync "github.com/NebulousLabs/Sia/sync"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/crypto"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/host/contractmanager"
+	"github.com/pachisi456/sia-hostdb-profiles/persist"
+	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 )
 
 const (
