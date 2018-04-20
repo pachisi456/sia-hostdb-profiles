@@ -41,6 +41,10 @@ type HostDB struct {
 	// random.
 	hostTree *hosttree.HostTree
 
+	// hostdbProfiles is the collection of all hostdb profiles the renter created to
+	// customize the host selection.
+	hostdbProfiles []modules.HostDBProfile
+
 	// the scanPool is a set of hosts that need to be scanned. There are a
 	// handful of goroutines constantly waiting on the channel for hosts to
 	// scan. The scan map is used to prevent duplicates from entering the scan
@@ -220,6 +224,11 @@ func (hdb *HostDB) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 	updateHostHistoricInteractions(&host, hdb.blockHeight)
 	hdb.mu.RUnlock()
 	return host, exists
+}
+
+// HostDBProfiles returns an array of all hostdb profiles the renter has.
+func (hdb *HostDB) HostDBProfiles() []modules.HostDBProfile {
+	return hdb.hostdbProfiles
 }
 
 // RandomHosts implements the HostDB interface's RandomHosts() method. It takes

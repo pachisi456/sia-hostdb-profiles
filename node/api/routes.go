@@ -97,6 +97,7 @@ func (api *API) buildHTTPRoutes(requiredUserAgent string, requiredPassword strin
 		router.GET("/hostdb/active", api.hostdbActiveHandler)
 		router.GET("/hostdb/all", api.hostdbAllHandler)
 		router.GET("/hostdb/hosts/:pubkey", api.hostdbHostsHandler)
+		router.GET("/hostdb/profiles", api.hostDBProfilesHandlerGET)
 	}
 
 	// Transaction pool API Calls

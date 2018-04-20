@@ -269,6 +269,7 @@ func main() {
 
 	root.AddCommand(hostdbCmd)
 	hostdbCmd.AddCommand(hostdbViewCmd)
+	hostdbCmd.AddCommand(hostdbProfilesCmd)
 	hostdbCmd.Flags().IntVarP(&hostdbNumHosts, "numhosts", "n", 0, "Number of hosts to display from the hostdb")
 	hostdbCmd.Flags().BoolVarP(&hostdbVerbose, "verbose", "v", false, "Display full hostdb information")
 

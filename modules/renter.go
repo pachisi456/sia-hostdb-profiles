@@ -117,6 +117,13 @@ type HostDBEntry struct {
 	PublicKey types.SiaPublicKey `json:"publickey"`
 }
 
+// HostDBProfile is a hostdb profile for customizable settings concerning the
+// selection of hosts.
+type HostDBProfile struct {
+	Storagetier string   `json:"storagetier"`
+	Location    []string `json:"location"`
+}
+
 // HostDBScan represents a single scan event.
 type HostDBScan struct {
 	Timestamp time.Time `json:"timestamp"`
@@ -323,6 +330,9 @@ type Renter interface {
 
 	// Host provides the DB entry and score breakdown for the requested host.
 	Host(pk types.SiaPublicKey) (HostDBEntry, bool)
+
+	// HostDBProfiles returns an array of all hostdb profiles the renter has.
+	HostDBProfiles() []HostDBProfile
 
 	// LoadSharedFiles loads a '.sia' file into the renter. A .sia file may
 	// contain multiple files. The paths of the added files are returned.

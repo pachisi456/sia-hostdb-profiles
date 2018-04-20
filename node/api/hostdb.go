@@ -35,6 +35,13 @@ type (
 		Entry          ExtendedHostDBEntry        `json:"entry"`
 		ScoreBreakdown modules.HostScoreBreakdown `json:"scorebreakdown"`
 	}
+
+	// HostDBProfile is a hostdb profile for customizable settings concerning the
+	// selection of hosts.
+	HostdbProfile struct {
+		Storagetier string   `json:"storagetier"`
+		Location    []string `json:"location"`
+	}
 )
 
 // hostdbActiveHandler handles the API call asking for the list of active
@@ -113,4 +120,10 @@ func (api *API) hostdbHostsHandler(w http.ResponseWriter, req *http.Request, ps 
 		Entry:          extendedEntry,
 		ScoreBreakdown: breakdown,
 	})
+}
+
+// hostDBProfilesHandlerGET handles the API call asking for the list of hostdb profiles and returns such.
+func (api *API) hostDBProfilesHandlerGET(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+	profiles := api.renter.HostDBProfiles()
+	WriteJSON(w, profiles)
 }

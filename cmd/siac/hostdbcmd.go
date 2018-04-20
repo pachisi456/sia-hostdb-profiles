@@ -33,6 +33,13 @@ var (
 		Long:  "View detailed information about a host, including things like a score breakdown.",
 		Run:   wrap(hostdbviewcmd),
 	}
+
+	hostdbProfilesCmd = &cobra.Command{
+		Use:   "profiles",
+		Short: "View and edit hostdb profiles.",
+		Long:  "View and edit hostdb profiles to customize the way hosts are selected.",
+		Run:   wrap(hostdbprofilescmd),
+	}
 )
 
 // printScoreBreakdown prints the score breakdown of a host, provided the info.
@@ -329,4 +336,18 @@ func hostdbviewcmd(pubkey string) {
 	fmt.Printf("  Overall Uptime:      %.3f\n", uptimeRatio)
 
 	fmt.Println()
+}
+
+func hostdbprofilescmd() {
+	var hdbp []api.HostdbProfile
+	err := getAPI("/hostdb/profiles", hdbp)
+	if err != nil {
+		die("Could not fetch hostdb profiles:", err)
+	}
+
+	fmt.Println("Hostdb profiles:")
+	for i, p := range hdbp {
+		fmt.Println("Profile", i + 1)
+		fmt.Printf(`	%+v`, p)
+	}
 }
