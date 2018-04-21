@@ -2,8 +2,15 @@ package client
 
 import (
 	"github.com/pachisi456/sia-hostdb-profiles/encoding"
+	"github.com/pachisi456/sia-hostdb-profiles/node/api"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
 )
+
+// MinerGet requests the /miner endpoint's resources.
+func (c *Client) MinerGet() (mg api.MinerGET, err error) {
+	err = c.get("/miner", &mg)
+	return
+}
 
 // MinerHeaderGet uses the /miner/header endpoint to get a header for work.
 func (c *Client) MinerHeaderGet() (target types.Target, bh types.BlockHeader, err error) {
