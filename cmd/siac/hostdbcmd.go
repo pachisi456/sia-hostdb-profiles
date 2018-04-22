@@ -337,8 +337,7 @@ func hostdbviewcmd(pubkey string) {
 }
 
 func hostdbprofilescmd() {
-	var hdbp []api.HostdbProfile
-	err := getAPI("/hostdb/profiles", hdbp)
+	hdbp, err := httpClient.HostDbProfilesGet()
 	if err != nil {
 		die("Could not fetch hostdb profiles:", err)
 	}

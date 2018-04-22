@@ -22,3 +22,9 @@ func (c *Client) HostDbHostsGet(pk types.SiaPublicKey) (hhg api.HostdbHostsGET, 
 	err = c.get("/hostdb/hosts/"+pk.String(), &hhg)
 	return
 }
+
+// HostDbProfilesGet requests the /hostdb/profiles endpoint's resources.
+func (c *Client) HostDbProfilesGet() (hdbp []api.HostdbProfile, err error) {
+	err = c.get("/hostdb/profiles", &hdbp)
+	return
+}
