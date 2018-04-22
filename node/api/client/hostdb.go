@@ -3,6 +3,7 @@ package client
 import (
 	"github.com/pachisi456/sia-hostdb-profiles/node/api"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"net/url"
 )
 
 // HostDbActiveGet requests the /hostdb/active endpoint's resources.
@@ -24,7 +25,17 @@ func (c *Client) HostDbHostsGet(pk types.SiaPublicKey) (hhg api.HostdbHostsGET, 
 }
 
 // HostDbProfilesGet requests the /hostdb/profiles endpoint's resources.
-func (c *Client) HostDbProfilesGet() (hdbp []api.HostdbProfile, err error) {
+func (c *Client) HostDbProfilesGet() (hdbp map[string]api.HostdbProfile, err error) {
 	err = c.get("/hostdb/profiles", &hdbp)
+	return
+}
+
+// HostDbProfilesAddPost posts a new profile to add to the hostdb profiles
+// API route /hostdb/profiles/add
+func (c *Client) HostDbProfilesAddPost(name string, storagetier string) (err error) {
+	values := url.Values{}
+	values.Set("name", name)
+	values.Set("storagetier", storagetier)
+	err = c.post("/hostdb/profiles/add", values.Encode(), nil)
 	return
 }

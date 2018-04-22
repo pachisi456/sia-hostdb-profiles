@@ -41,6 +41,22 @@ var (
 		Long:  "View and edit hostdb profiles to customize the way hosts are selected.",
 		Run:   wrap(hostdbprofilescmd),
 	}
+
+	hostdbProfilesAddCmd = &cobra.Command{
+		Use:   "add [name] [storagetier]",
+		Short: "Add a hostdb profile.",
+		Long: `Add a hostdb profile that uses custom settings for the host selection. When
+uploading a file you can then specify under what profile your file should be uploaded.
+
+[name] will be the name for the profile.
+
+[storagetier] is a parameter to set preference for either price or performance. You can
+choose between "cold", "warm" and "hot". "cold" will pick cheap hosts with less performance
+while "hot" will pick high-performance but more expensive hosts. "warm" is the default setting
+and makes a reasonable compromise between price and performance.
+`,
+		Run: wrap(hostdbprofilesaddcmd),
+	}
 )
 
 // printScoreBreakdown prints the score breakdown of a host, provided the info.
@@ -343,8 +359,18 @@ func hostdbprofilescmd() {
 	}
 
 	fmt.Println("Hostdb profiles:")
-	for i, p := range hdbp {
-		fmt.Println("Profile", i + 1)
-		fmt.Printf(`	%+v`, p)
+	for k, v := range hdbp {
+		fmt.Printf(`Profile "%v":
+	Storage Tier:	%v
+	Host Location:	%v
+`, k, v.Storagetier, v.Location)
 	}
+}
+
+func hostdbprofilesaddcmd(name string, storagetier string) {
+	err := httpClient.HostDbProfilesAddPost(name, storagetier)
+	if err != nil {
+		die("Could not add hostdb profile:", err)
+	}
+	fmt.Println("Added hostdb profile", name)
 }

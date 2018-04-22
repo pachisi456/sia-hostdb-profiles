@@ -19,9 +19,18 @@ import (
 )
 
 var (
-	errNilCS      = errors.New("cannot create hostdb with nil consensus set")
-	errNilGateway = errors.New("cannot create hostdb with nil gateway")
+	errHostdbProfileExists = errors.New("hostdb profile with provided name already exists")
+	errNilCS               = errors.New("cannot create hostdb with nil consensus set")
+	errNilGateway          = errors.New("cannot create hostdb with nil gateway")
+	errNoSuchStorageTier   = errors.New("no such storage tier, see `siac hostdb profiles add " +
+		"-h` for possible storage tiers")
 )
+
+// storagetiers is an array of all possible storage tiers that the user can
+// choose between when creating a new hostdb profile. Depending on the
+// "temperature" set here less performant but cheaper hosts (cold) or more
+// performant but more expensive hosts (hot) are picked in the host selection
+var storagetiers = []string{"cold", "warm", "hot"}
 
 // The HostDB is a database of potential hosts. It assigns a weight to each
 // host based on their hosting parameters, and then can select hosts at random
@@ -36,14 +45,14 @@ type HostDB struct {
 	persistDir string
 	tg         siasync.ThreadGroup
 
+	// hostdbProfiles is the collection of all hostdb profiles the renter created to
+	// customize the host selection.
+	hostdbProfiles map[string]modules.HostDBProfile
+
 	// The hostTree is the root node of the tree that organizes hosts by
 	// weight. The tree is necessary for selecting weighted hosts at
 	// random.
 	hostTree *hosttree.HostTree
-
-	// hostdbProfiles is the collection of all hostdb profiles the renter created to
-	// customize the host selection.
-	hostdbProfiles []modules.HostDBProfile
 
 	// the scanPool is a set of hosts that need to be scanned. There are a
 	// handful of goroutines constantly waiting on the channel for hosts to
@@ -82,7 +91,8 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 		gateway:    g,
 		persistDir: persistDir,
 
-		scanMap: make(map[string]struct{}),
+		hostdbProfiles: make(map[string]modules.HostDBProfile), //TODO @pachisi456: delete this and/or load from persistent data
+		scanMap:        make(map[string]struct{}),
 	}
 
 	// Create the persist directory if it does not yet exist.
@@ -189,6 +199,31 @@ func (hdb *HostDB) ActiveHosts() (activeHosts []modules.HostDBEntry) {
 	return activeHosts
 }
 
+// AddHostDBProfiles adds a new hostdb profile.
+func (hdb *HostDB) AddHostDBProfiles(name string, storagetier string) (err error) {
+	// check if hostdb profile with that name already exists
+	hdbprofiles := hdb.HostDBProfiles()
+	if _, exists := hdbprofiles[name]; exists {
+		return errHostdbProfileExists
+	}
+	// check if provided storage tier is valid
+	validTier := false
+	for _, v := range storagetiers {
+		if v == storagetier {
+			validTier = true
+			break
+		}
+	}
+	if !validTier {
+		return errNoSuchStorageTier
+	}
+	hdbprofiles[name] = modules.HostDBProfile{
+		Storagetier: storagetier,
+		Location:    nil,
+	}
+	return
+}
+
 // AllHosts returns all of the hosts known to the hostdb, including the
 // inactive ones.
 func (hdb *HostDB) AllHosts() (allHosts []modules.HostDBEntry) {
@@ -227,7 +262,7 @@ func (hdb *HostDB) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 }
 
 // HostDBProfiles returns an array of all hostdb profiles the renter has.
-func (hdb *HostDB) HostDBProfiles() []modules.HostDBProfile {
+func (hdb *HostDB) HostDBProfiles() map[string]modules.HostDBProfile {
 	return hdb.hostdbProfiles
 }
 

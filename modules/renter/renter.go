@@ -59,6 +59,9 @@ type hostDB interface {
 	// from.
 	ActiveHosts() []modules.HostDBEntry
 
+	// AddHostDBProfiles adds a new hostdb profile.
+	AddHostDBProfiles(string, string) error
+
 	// AllHosts returns the full list of hosts known to the hostdb, sorted in
 	// order of preference.
 	AllHosts() []modules.HostDBEntry
@@ -73,7 +76,7 @@ type hostDB interface {
 	Host(types.SiaPublicKey) (modules.HostDBEntry, bool)
 
 	// HostDBProfile returns an array of all hostdb profiles the renter has.
-	HostDBProfiles() []modules.HostDBProfile
+	HostDBProfiles() map[string]modules.HostDBProfile
 
 	// RandomHosts returns a set of random hosts, weighted by their estimated
 	// usefulness / attractiveness to the renter. RandomHosts will not return
@@ -310,6 +313,11 @@ func (r *Renter) SetSettings(s modules.RenterSettings) error {
 // ActiveHosts returns an array of hostDB's active hosts
 func (r *Renter) ActiveHosts() []modules.HostDBEntry { return r.hostDB.ActiveHosts() }
 
+// AddHostDBProfiles adds a new hostdb profile.
+func (r *Renter) AddHostDBProfiles(name string, storagetier string) (err error) {
+	return r.hostDB.AddHostDBProfiles(name, storagetier)
+}
+
 // AllHosts returns an array of all hosts
 func (r *Renter) AllHosts() []modules.HostDBEntry { return r.hostDB.AllHosts() }
 
@@ -317,7 +325,7 @@ func (r *Renter) AllHosts() []modules.HostDBEntry { return r.hostDB.AllHosts() }
 func (r *Renter) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) { return r.hostDB.Host(spk) }
 
 // HostDBProfiles returns an array of all hostdb profiles the renter has.
-func (r *Renter) HostDBProfiles() []modules.HostDBProfile {return r.hostDB.HostDBProfiles()}
+func (r *Renter) HostDBProfiles() map[string]modules.HostDBProfile { return r.hostDB.HostDBProfiles() }
 
 // ScoreBreakdown returns the score breakdown
 func (r *Renter) ScoreBreakdown(e modules.HostDBEntry) modules.HostScoreBreakdown {

@@ -295,6 +295,9 @@ type Renter interface {
 	// sorted by preference.
 	ActiveHosts() []HostDBEntry
 
+	// AddHostDBProfiles adds a new hostdb profile.
+	AddHostDBProfiles(string, string) error
+
 	// AllHosts returns the full list of hosts known to the renter.
 	AllHosts() []HostDBEntry
 
@@ -332,7 +335,7 @@ type Renter interface {
 	Host(pk types.SiaPublicKey) (HostDBEntry, bool)
 
 	// HostDBProfiles returns an array of all hostdb profiles the renter has.
-	HostDBProfiles() []HostDBProfile
+	HostDBProfiles() map[string]HostDBProfile
 
 	// LoadSharedFiles loads a '.sia' file into the renter. A .sia file may
 	// contain multiple files. The paths of the added files are returned.
