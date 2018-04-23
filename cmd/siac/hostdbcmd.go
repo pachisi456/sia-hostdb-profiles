@@ -360,9 +360,11 @@ func hostdbprofilescmd() {
 
 	fmt.Println("Hostdb profiles:")
 	for k, v := range hdbp {
-		fmt.Printf(`Profile "%v":
-	Storage Tier:	%v
-	Host Location:	%v
+		fmt.Printf(`
+	Profile "%v":
+		Storage Tier:	%v
+		Host Location:	%v
+
 `, k, v.Storagetier, v.Location)
 	}
 }

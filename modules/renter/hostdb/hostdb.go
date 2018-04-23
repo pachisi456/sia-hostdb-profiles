@@ -91,8 +91,7 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 		gateway:    g,
 		persistDir: persistDir,
 
-		hostdbProfiles: make(map[string]modules.HostDBProfile), //TODO @pachisi456: delete this and/or load from persistent data
-		scanMap:        make(map[string]struct{}),
+		scanMap: make(map[string]struct{}),
 	}
 
 	// Create the persist directory if it does not yet exist.
@@ -132,6 +131,7 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 			hdb.log.Println("Unable to save the hostdb:", err)
 		}
 	})
+	hdb.loadHostTrees()
 
 	// Loading is complete, establish the save loop.
 	go hdb.threadedSaveLoop()
@@ -221,6 +221,10 @@ func (hdb *HostDB) AddHostDBProfiles(name string, storagetier string) (err error
 		Storagetier: storagetier,
 		Location:    nil,
 	}
+	err = hdb.saveSync()
+	if err != nil {
+		hdb.log.Println("Unable to save the hostdb profile:", err)
+	}
 	return
 }
 
@@ -264,6 +268,25 @@ func (hdb *HostDB) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 // HostDBProfiles returns an array of all hostdb profiles the renter has.
 func (hdb *HostDB) HostDBProfiles() map[string]modules.HostDBProfile {
 	return hdb.hostdbProfiles
+}
+
+//TODO pachisi456: doc
+func (hdb *HostDB) loadHostTrees() (err error) {
+	// set the default hostdb profile (warm storage tier, no location
+	// specification) if no profile was found in persistence data
+	if len(hdb.hostdbProfiles) < 1 {
+		hdb.hostdbProfiles = make(map[string]modules.HostDBProfile)
+		hdb.hostdbProfiles["default"] = modules.HostDBProfile{
+			Storagetier: "warm",
+			Location:    nil,
+		}
+	}
+	//TODO pachisi456: load host trees for profiles here
+	err = hdb.saveSync()
+	if err != nil {
+		hdb.log.Println("Unable to save the hostdb:", err)
+	}
+	return
 }
 
 // RandomHosts implements the HostDB interface's RandomHosts() method. It takes
