@@ -3,6 +3,7 @@ package modules
 import (
 	"encoding/json"
 	"io"
+	"sync"
 	"time"
 
 	"github.com/pachisi456/sia-hostdb-profiles/crypto"
@@ -117,13 +118,6 @@ type HostDBEntry struct {
 	PublicKey types.SiaPublicKey `json:"publickey"`
 }
 
-// HostDBProfile is a hostdb profile for customizable settings concerning the
-// selection of hosts.
-type HostDBProfile struct {
-	Storagetier string   `json:"storagetier"`
-	Location    []string `json:"location"`
-}
-
 // HostDBScan represents a single scan event.
 type HostDBScan struct {
 	Timestamp time.Time `json:"timestamp"`
@@ -181,6 +175,23 @@ type HostDBScans []HostDBScan
 func (s HostDBScans) Len() int           { return len(s) }
 func (s HostDBScans) Less(i, j int) bool { return s[i].Timestamp.Before(s[j].Timestamp) }
 func (s HostDBScans) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+type (
+	// HostDBProfile is a hostdb profile for customizable settings concerning the
+	// selection of hosts.
+	HostDBProfile struct {
+		Name        string   `json:"hostdbprofile"`
+		Storagetier string   `json:"storagetier"`
+		Location    []string `json:"location"`
+	}
+
+	// HostDBProfiles is the collection of all hostdb profiles the renter created to
+	// customize the host selection.
+	HostDBProfiles struct {
+		Profiles []HostDBProfile
+		Mu       sync.Mutex
+	}
+)
 
 // MerkleRootSet is a set of Merkle roots, and gets encoded more efficiently.
 type MerkleRootSet []crypto.Hash
@@ -334,8 +345,8 @@ type Renter interface {
 	// Host provides the DB entry and score breakdown for the requested host.
 	Host(pk types.SiaPublicKey) (HostDBEntry, bool)
 
-	// HostDBProfiles returns an array of all hostdb profiles the renter has.
-	HostDBProfiles() map[string]HostDBProfile
+	// HostDBProfiles returns the array with hostdb profiles.
+	HostDBProfiles() HostDBProfiles
 
 	// LoadSharedFiles loads a '.sia' file into the renter. A .sia file may
 	// contain multiple files. The paths of the added files are returned.

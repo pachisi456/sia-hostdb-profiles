@@ -19,18 +19,9 @@ import (
 )
 
 var (
-	errHostdbProfileExists = errors.New("hostdb profile with provided name already exists")
-	errNilCS               = errors.New("cannot create hostdb with nil consensus set")
-	errNilGateway          = errors.New("cannot create hostdb with nil gateway")
-	errNoSuchStorageTier   = errors.New("no such storage tier, see `siac hostdb profiles add " +
-		"-h` for possible storage tiers")
+	errNilCS      = errors.New("cannot create hostdb with nil consensus set")
+	errNilGateway = errors.New("cannot create hostdb with nil gateway")
 )
-
-// storagetiers is an array of all possible storage tiers that the user can
-// choose between when creating a new hostdb profile. Depending on the
-// "temperature" set here less performant but cheaper hosts (cold) or more
-// performant but more expensive hosts (hot) are picked in the host selection
-var storagetiers = []string{"cold", "warm", "hot"}
 
 // The HostDB is a database of potential hosts. It assigns a weight to each
 // host based on their hosting parameters, and then can select hosts at random
@@ -47,7 +38,7 @@ type HostDB struct {
 
 	// hostdbProfiles is the collection of all hostdb profiles the renter created to
 	// customize the host selection.
-	hostdbProfiles map[string]modules.HostDBProfile
+	hostdbProfiles modules.HostDBProfiles
 
 	// The hostTree is the root node of the tree that organizes hosts by
 	// weight. The tree is necessary for selecting weighted hosts at
@@ -123,6 +114,14 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
+
+	hdb.hostdbProfiles.Mu.Lock()
+	// Make sure the default hostdb profile is set.
+	if len(hdb.hostdbProfiles.Profiles) < 1 {
+		hdb.hostdbProfiles.Profiles = append(hdb.hostdbProfiles.Profiles, NewHostDBProfile("default", "warm"))
+	}
+	hdb.hostdbProfiles.Mu.Unlock()
+
 	hdb.tg.AfterStop(func() {
 		hdb.mu.Lock()
 		err := hdb.saveSync()
@@ -199,44 +198,17 @@ func (hdb *HostDB) ActiveHosts() (activeHosts []modules.HostDBEntry) {
 	return activeHosts
 }
 
-// AddHostDBProfiles adds a new hostdb profile.
-func (hdb *HostDB) AddHostDBProfiles(name string, storagetier string) (err error) {
-	// check if hostdb profile with that name already exists
-	hdbprofiles := hdb.HostDBProfiles()
-	if _, exists := hdbprofiles[name]; exists {
-		return errHostdbProfileExists
-	}
-	// check if provided storage tier is valid
-	validTier := false
-	for _, v := range storagetiers {
-		if v == storagetier {
-			validTier = true
-			break
-		}
-	}
-	if !validTier {
-		return errNoSuchStorageTier
-	}
-	hdbprofiles[name] = modules.HostDBProfile{
-		Storagetier: storagetier,
-		Location:    nil,
-	}
-	err = hdb.saveSync()
-	if err != nil {
-		hdb.log.Println("Unable to save the hostdb profile:", err)
-	}
-	return
-}
-
 // AllHosts returns all of the hosts known to the hostdb, including the
 // inactive ones.
 func (hdb *HostDB) AllHosts() (allHosts []modules.HostDBEntry) {
+	//TODO pachisi456: add support for multiple profiles / trees
 	return hdb.hostTree.All()
 }
 
 // AverageContractPrice returns the average price of a host.
 func (hdb *HostDB) AverageContractPrice() (totalPrice types.Currency) {
 	sampleSize := 32
+	//TODO pachisi456: add support for multiple profiles / trees
 	hosts := hdb.hostTree.SelectRandom(sampleSize, nil)
 	if len(hosts) == 0 {
 		return totalPrice
@@ -265,21 +237,20 @@ func (hdb *HostDB) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 	return host, exists
 }
 
-// HostDBProfiles returns an array of all hostdb profiles the renter has.
-func (hdb *HostDB) HostDBProfiles() map[string]modules.HostDBProfile {
-	return hdb.hostdbProfiles
-}
-
 //TODO pachisi456: doc
 func (hdb *HostDB) loadHostTrees() (err error) {
+	hdbp := hdb.hostdbProfiles
+	hdbp.Mu.Lock()
+	defer hdbp.Mu.Unlock()
+
 	// set the default hostdb profile (warm storage tier, no location
 	// specification) if no profile was found in persistence data
-	if len(hdb.hostdbProfiles) < 1 {
-		hdb.hostdbProfiles = make(map[string]modules.HostDBProfile)
-		hdb.hostdbProfiles["default"] = modules.HostDBProfile{
+	if len(hdbp.Profiles) < 1 {
+		hdbp.Profiles = append(hdbp.Profiles, modules.HostDBProfile{
+			Name:        "default",
 			Storagetier: "warm",
 			Location:    nil,
-		}
+		})
 	}
 	//TODO pachisi456: load host trees for profiles here
 	err = hdb.saveSync()

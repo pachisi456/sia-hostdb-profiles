@@ -24,7 +24,7 @@ var (
 
 // hdbPersist defines what HostDB data persists across sessions.
 type hdbPersist struct {
-	Profiles    map[string]modules.HostDBProfile
+	Profiles    []modules.HostDBProfile
 	AllHosts    []modules.HostDBEntry
 	BlockHeight types.BlockHeight
 	LastChange  modules.ConsensusChangeID
@@ -32,7 +32,7 @@ type hdbPersist struct {
 
 // persistData returns the data in the hostdb that will be saved to disk.
 func (hdb *HostDB) persistData() (data hdbPersist) {
-	data.Profiles = hdb.hostdbProfiles
+	data.Profiles = hdb.hostdbProfiles.Profiles
 	data.AllHosts = hdb.hostTree.All()
 	data.BlockHeight = hdb.blockHeight
 	data.LastChange = hdb.lastChange
@@ -46,6 +46,9 @@ func (hdb *HostDB) saveSync() error {
 
 // load loads the hostdb persistence data from disk.
 func (hdb *HostDB) load() error {
+	hdb.hostdbProfiles.Mu.Lock()
+	defer hdb.hostdbProfiles.Mu.Unlock()
+
 	// Fetch the data from the file.
 	var data hdbPersist
 	err := hdb.deps.LoadFile(persistMetadata, &data, filepath.Join(hdb.persistDir, persistFilename))
@@ -54,10 +57,11 @@ func (hdb *HostDB) load() error {
 	}
 
 	// Set the hostdb internal values.
-	hdb.hostdbProfiles = data.Profiles
+	hdb.hostdbProfiles.Profiles = data.Profiles
 	hdb.blockHeight = data.BlockHeight
 	hdb.lastChange = data.LastChange
 
+	//TODO pachisi456: add support for multiple trees
 	// Load each of the hosts into the host tree.
 	for _, host := range data.AllHosts {
 		// COMPATv1.1.0
