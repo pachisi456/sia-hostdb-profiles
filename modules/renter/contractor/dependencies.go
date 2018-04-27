@@ -47,12 +47,12 @@ type (
 	}
 
 	hostDB interface {
-		AllHosts() []modules.HostDBEntry
-		ActiveHosts() []modules.HostDBEntry
+		AllHosts(string) []modules.HostDBEntry
+		ActiveHosts(string) []modules.HostDBEntry
 		Host(types.SiaPublicKey) (modules.HostDBEntry, bool)
 		IncrementSuccessfulInteractions(key types.SiaPublicKey)
 		IncrementFailedInteractions(key types.SiaPublicKey)
-		RandomHosts(n int, exclude []types.SiaPublicKey) []modules.HostDBEntry
+		RandomHosts(tree string, n int, exclude []types.SiaPublicKey) []modules.HostDBEntry
 		ScoreBreakdown(modules.HostDBEntry) modules.HostScoreBreakdown
 	}
 

@@ -40,10 +40,9 @@ type HostDB struct {
 	// customize the host selection.
 	hostdbProfiles modules.HostDBProfiles
 
-	// The hostTree is the root node of the tree that organizes hosts by
-	// weight. The tree is necessary for selecting weighted hosts at
-	// random.
-	hostTree *hosttree.HostTree
+	// hostTrees contains a HostTree for each HostDBProfile. The trees are necessary
+	// for selecting weighted hosts at random.
+	hostTrees hosttree.HostTrees
 
 	// the scanPool is a set of hosts that need to be scanned. There are a
 	// handful of goroutines constantly waiting on the channel for hosts to
@@ -82,7 +81,8 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 		gateway:    g,
 		persistDir: persistDir,
 
-		scanMap: make(map[string]struct{}),
+		hostTrees: hosttree.NewHostTrees(),
+		scanMap:   make(map[string]struct{}),
 	}
 
 	// Create the persist directory if it does not yet exist.
@@ -103,13 +103,9 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 			fmt.Println("Failed to close the hostdb logger:", err)
 		}
 	})
-
-	// The host tree is used to manage hosts and query them at random.
-	hdb.hostTree = hosttree.New(hdb.calculateHostWeight)
-
 	// Load the prior persistence structures.
 	hdb.mu.Lock()
-	err = hdb.load()
+	err, allHosts := hdb.load()
 	hdb.mu.Unlock()
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
@@ -122,6 +118,9 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 	}
 	hdb.hostdbProfiles.Mu.Unlock()
 
+	// Load the host trees, one tree for each hostdb profile.
+	hdb.loadHostTrees(allHosts)
+
 	hdb.tg.AfterStop(func() {
 		hdb.mu.Lock()
 		err := hdb.saveSync()
@@ -130,7 +129,6 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 			hdb.log.Println("Unable to save the hostdb:", err)
 		}
 	})
-	hdb.loadHostTrees()
 
 	// Loading is complete, establish the save loop.
 	go hdb.threadedSaveLoop()
@@ -180,9 +178,9 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 }
 
 // ActiveHosts returns a list of hosts that are currently online, sorted by
-// weight.
-func (hdb *HostDB) ActiveHosts() (activeHosts []modules.HostDBEntry) {
-	allHosts := hdb.hostTree.All()
+// weight. tree specifies the host tree the hosts should be pulled from.
+func (hdb *HostDB) ActiveHosts(tree string) (activeHosts []modules.HostDBEntry) {
+	allHosts := hdb.hostTrees.All(tree)
 	for _, entry := range allHosts {
 		if len(entry.ScanHistory) == 0 {
 			continue
@@ -198,18 +196,17 @@ func (hdb *HostDB) ActiveHosts() (activeHosts []modules.HostDBEntry) {
 	return activeHosts
 }
 
-// AllHosts returns all of the hosts known to the hostdb, including the
+// AllHosts returns all of the hosts of the specified host tree, including the
 // inactive ones.
-func (hdb *HostDB) AllHosts() (allHosts []modules.HostDBEntry) {
-	//TODO pachisi456: add support for multiple profiles / trees
-	return hdb.hostTree.All()
+func (hdb *HostDB) AllHosts(tree string) (allHosts []modules.HostDBEntry) {
+	return hdb.hostTrees.All(tree)
 }
 
 // AverageContractPrice returns the average price of a host.
-func (hdb *HostDB) AverageContractPrice() (totalPrice types.Currency) {
+func (hdb *HostDB) AverageContractPrice(tree string) (totalPrice types.Currency) {
 	sampleSize := 32
 	//TODO pachisi456: add support for multiple profiles / trees
-	hosts := hdb.hostTree.SelectRandom(sampleSize, nil)
+	hosts := hdb.hostTrees.SelectRandom(tree, sampleSize, nil)
 	if len(hosts) == 0 {
 		return totalPrice
 	}
@@ -227,7 +224,7 @@ func (hdb *HostDB) Close() error {
 // Host returns the HostSettings associated with the specified NetAddress. If
 // no matching host is found, Host returns false.
 func (hdb *HostDB) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
-	host, exists := hdb.hostTree.Select(spk)
+	host, exists := hdb.hostTrees.Select(spk)
 	if !exists {
 		return host, exists
 	}
@@ -237,23 +234,53 @@ func (hdb *HostDB) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 	return host, exists
 }
 
-//TODO pachisi456: doc
-func (hdb *HostDB) loadHostTrees() (err error) {
-	hdbp := hdb.hostdbProfiles
-	hdbp.Mu.Lock()
-	defer hdbp.Mu.Unlock()
+// loadHostTrees loads one host tree for each hostdb profile.
+// The host tree is used to manage hosts and query them at random.
+func (hdb *HostDB) loadHostTrees(allHosts []modules.HostDBEntry) (err error) {
+	hdb.hostdbProfiles.Mu.Lock()
 
 	// set the default hostdb profile (warm storage tier, no location
 	// specification) if no profile was found in persistence data
-	if len(hdbp.Profiles) < 1 {
-		hdbp.Profiles = append(hdbp.Profiles, modules.HostDBProfile{
+	if len(hdb.hostdbProfiles.Profiles) < 1 {
+		hdb.hostdbProfiles.Profiles = append(hdb.hostdbProfiles.Profiles, modules.HostDBProfile{
 			Name:        "default",
 			Storagetier: "warm",
 			Location:    nil,
 		})
 	}
-	//TODO pachisi456: load host trees for profiles here
+
+	hdb.hostdbProfiles.Mu.Unlock()
+
+	//TODO pachisi456: load host trees for all profiles here
+	hdb.hostTrees.AddHostTree("default", *hosttree.NewHostTree(hdb.calculateHostWeight))
+	for _, host := range allHosts {
+		// COMPATv1.1.0
+		//
+		// The host did not always track its block height correctly, meaning
+		// that previously the FirstSeen values and the blockHeight values
+		// could get out of sync.
+		if hdb.blockHeight < host.FirstSeen {
+			host.FirstSeen = hdb.blockHeight
+		}
+
+		//fmt.Println(3, ht.Trees["default"])
+
+		err := hdb.hostTrees.Insert(host)
+		if err != nil {
+			hdb.log.Debugln("ERROR: could not insert host while loading:", host.NetAddress)
+		}
+
+		// Make sure that all hosts have gone through the initial scanning.
+		if len(host.ScanHistory) < 2 {
+			hdb.mu.Lock()
+			hdb.queueScan(host)
+			hdb.mu.Unlock()
+		}
+	}
+
+	hdb.mu.Lock()
 	err = hdb.saveSync()
+	hdb.mu.Unlock()
 	if err != nil {
 		hdb.log.Println("Unable to save the hostdb:", err)
 	}
@@ -261,8 +288,8 @@ func (hdb *HostDB) loadHostTrees() (err error) {
 }
 
 // RandomHosts implements the HostDB interface's RandomHosts() method. It takes
-// a number of hosts to return, and a slice of netaddresses to ignore, and
-// returns a slice of entries.
-func (hdb *HostDB) RandomHosts(n int, excludeKeys []types.SiaPublicKey) []modules.HostDBEntry {
-	return hdb.hostTree.SelectRandom(n, excludeKeys)
+// the tree from which the hosts should be picked, a number of hosts to return,
+// and a slice of public keys to exclude, and returns a slice of entries.
+func (hdb *HostDB) RandomHosts(tree string, n int, excludeKeys []types.SiaPublicKey) []modules.HostDBEntry {
+	return hdb.hostTrees.SelectRandom(tree, n, excludeKeys)
 }

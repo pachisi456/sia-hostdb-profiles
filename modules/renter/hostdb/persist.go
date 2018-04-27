@@ -32,8 +32,13 @@ type hdbPersist struct {
 
 // persistData returns the data in the hostdb that will be saved to disk.
 func (hdb *HostDB) persistData() (data hdbPersist) {
+	hdb.hostdbProfiles.Mu.Lock()
 	data.Profiles = hdb.hostdbProfiles.Profiles
-	data.AllHosts = hdb.hostTree.All()
+	hdb.hostdbProfiles.Mu.Unlock()
+
+	// This is nothing hostdb profile specific so the default host tree can be used.
+	data.AllHosts = hdb.hostTrees.All("default")
+
 	data.BlockHeight = hdb.blockHeight
 	data.LastChange = hdb.lastChange
 	return data
@@ -44,8 +49,9 @@ func (hdb *HostDB) saveSync() error {
 	return hdb.deps.SaveFileSync(persistMetadata, hdb.persistData(), filepath.Join(hdb.persistDir, persistFilename))
 }
 
-// load loads the hostdb persistence data from disk.
-func (hdb *HostDB) load() error {
+// load loads the hostdb persistence data from disk and returns all hosts found
+// in the hostdb persistence data.
+func (hdb *HostDB) load() (error, []modules.HostDBEntry) {
 	hdb.hostdbProfiles.Mu.Lock()
 	defer hdb.hostdbProfiles.Mu.Unlock()
 
@@ -53,37 +59,14 @@ func (hdb *HostDB) load() error {
 	var data hdbPersist
 	err := hdb.deps.LoadFile(persistMetadata, &data, filepath.Join(hdb.persistDir, persistFilename))
 	if err != nil {
-		return err
+		return err, nil
 	}
 
 	// Set the hostdb internal values.
 	hdb.hostdbProfiles.Profiles = data.Profiles
 	hdb.blockHeight = data.BlockHeight
 	hdb.lastChange = data.LastChange
-
-	//TODO pachisi456: add support for multiple trees
-	// Load each of the hosts into the host tree.
-	for _, host := range data.AllHosts {
-		// COMPATv1.1.0
-		//
-		// The host did not always track its block height correctly, meaning
-		// that previously the FirstSeen values and the blockHeight values
-		// could get out of sync.
-		if hdb.blockHeight < host.FirstSeen {
-			host.FirstSeen = hdb.blockHeight
-		}
-
-		err := hdb.hostTree.Insert(host)
-		if err != nil {
-			hdb.log.Debugln("ERROR: could not insert host while loading:", host.NetAddress)
-		}
-
-		// Make sure that all hosts have gone through the initial scanning.
-		if len(host.ScanHistory) < 2 {
-			hdb.queueScan(host)
-		}
-	}
-	return nil
+	return nil, data.AllHosts
 }
 
 // threadedSaveLoop saves the hostdb to disk every 2 minutes, also saving when

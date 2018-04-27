@@ -395,7 +395,8 @@ func (hdb *HostDB) calculateHostWeight(entry modules.HostDBEntry) types.Currency
 // percentage of contracts it is likely to participate in.
 func (hdb *HostDB) calculateConversionRate(score types.Currency) float64 {
 	var totalScore types.Currency
-	for _, h := range hdb.ActiveHosts() {
+	for _, h := range hdb.ActiveHosts("default") { //TODO pachisi456: add support for multiple trees (make
+		// all functions here operate on hostdb profiles so they can access the respective settings)
 		totalScore = totalScore.Add(hdb.calculateHostWeight(h))
 	}
 	if totalScore.IsZero() {

@@ -79,7 +79,7 @@ func (hdb *HostDB) queueScan(entry modules.HostDBEntry) {
 			scansRemaining := len(hdb.scanList)
 
 			// Grab the most recent entry for this host.
-			recentEntry, exists := hdb.hostTree.Select(entry.PublicKey)
+			recentEntry, exists := hdb.hostTrees.Select(entry.PublicKey)
 			if exists {
 				entry = recentEntry
 			}
@@ -132,7 +132,7 @@ func (hdb *HostDB) updateEntry(entry modules.HostDBEntry, netErr error) {
 	}
 
 	// Grab the host from the host tree, and update it with the neew settings.
-	newEntry, exists := hdb.hostTree.Select(entry.PublicKey)
+	newEntry, exists := hdb.hostTrees.Select(entry.PublicKey)
 	if exists {
 		newEntry.HostExternalSettings = entry.HostExternalSettings
 	} else {
@@ -194,7 +194,7 @@ func (hdb *HostDB) updateEntry(entry modules.HostDBEntry, netErr error) {
 	// hostdb. Only delete if there have been enough scans over a long enough
 	// period to be confident that the host really is offline for good.
 	if time.Now().Sub(newEntry.ScanHistory[0].Timestamp) > maxHostDowntime && !recentUptime && len(newEntry.ScanHistory) >= minScans {
-		err := hdb.hostTree.Remove(newEntry.PublicKey)
+		err := hdb.hostTrees.Remove(newEntry.PublicKey)
 		if err != nil {
 			hdb.log.Println("ERROR: unable to remove host newEntry which has had a ton of downtime:", err)
 		}
@@ -217,14 +217,14 @@ func (hdb *HostDB) updateEntry(entry modules.HostDBEntry, netErr error) {
 
 	// Add the updated entry
 	if !exists {
-		err := hdb.hostTree.Insert(newEntry)
+		err := hdb.hostTrees.Insert(newEntry)
 		if err != nil {
 			hdb.log.Println("ERROR: unable to insert entry which is was thought to be new:", err)
 		} else {
 			hdb.log.Debugf("Adding host %v to the hostdb. Net error: %v\n", newEntry.PublicKey.String(), netErr)
 		}
 	} else {
-		err := hdb.hostTree.Modify(newEntry)
+		err := hdb.hostTrees.Modify(newEntry)
 		if err != nil {
 			hdb.log.Println("ERROR: unable to modify entry which is thought to exist:", err)
 		} else {
@@ -339,7 +339,9 @@ func (hdb *HostDB) threadedScan() {
 		// Grab a set of hosts to scan, grab hosts that are active, inactive,
 		// and offline to get high diversity.
 		var onlineHosts, offlineHosts []modules.HostDBEntry
-		allHosts := hdb.hostTree.All()
+		//TODO below code does not support multiple host trees, just the default one.
+		allHosts := hdb.hostTrees.All("default") //TODO prioritization of hosts happens on the basis
+		// of the default host tree
 		for i := len(allHosts) - 1; i >= 0; i-- {
 			if len(onlineHosts) >= hostCheckupQuantity && len(offlineHosts) >= hostCheckupQuantity {
 				break

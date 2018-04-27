@@ -57,17 +57,17 @@ var (
 type hostDB interface {
 	// ActiveHosts returns the list of hosts that are actively being selected
 	// from.
-	ActiveHosts() []modules.HostDBEntry
+	ActiveHosts(string) []modules.HostDBEntry
 
 	// AddHostDBProfiles adds a new hostdb profile.
 	AddHostDBProfiles(string, string) error
 
 	// AllHosts returns the full list of hosts known to the hostdb, sorted in
 	// order of preference.
-	AllHosts() []modules.HostDBEntry
+	AllHosts(string) []modules.HostDBEntry
 
 	// AverageContractPrice returns the average contract price of a host.
-	AverageContractPrice() types.Currency
+	AverageContractPrice(string) types.Currency
 
 	// Close closes the hostdb.
 	Close() error
@@ -81,7 +81,7 @@ type hostDB interface {
 	// RandomHosts returns a set of random hosts, weighted by their estimated
 	// usefulness / attractiveness to the renter. RandomHosts will not return
 	// any offline or inactive hosts.
-	RandomHosts(int, []types.SiaPublicKey) []modules.HostDBEntry
+	RandomHosts(string, int, []types.SiaPublicKey) []modules.HostDBEntry
 
 	// ScoreBreakdown returns a detailed explanation of the various properties
 	// of the host.
@@ -219,7 +219,8 @@ func (r *Renter) Close() error {
 // PriceEstimation estimates the cost in siacoins of performing various storage
 // and data operations.
 //
-// TODO: Make this function line up with the actual settings in the renter.
+// TODO: Make this function line up with the actual settings and different profiles
+// in the renter (right now it just uses the default host tree).
 // Perhaps even make it so it uses the renter's actual contracts if it has any.
 func (r *Renter) PriceEstimation() modules.RenterPriceEstimation {
 	id := r.mu.RLock()
@@ -230,7 +231,8 @@ func (r *Renter) PriceEstimation() modules.RenterPriceEstimation {
 	}
 
 	// Grab hosts to perform the estimation.
-	hosts := r.hostDB.RandomHosts(priceEstimationScope, nil)
+	//TODO this uses just the default host tree
+	hosts := r.hostDB.RandomHosts("default", priceEstimationScope, nil)
 
 	// Check if there are zero hosts, which means no estimation can be made.
 	if len(hosts) == 0 {
@@ -311,7 +313,7 @@ func (r *Renter) SetSettings(s modules.RenterSettings) error {
 }
 
 // ActiveHosts returns an array of hostDB's active hosts
-func (r *Renter) ActiveHosts() []modules.HostDBEntry { return r.hostDB.ActiveHosts() }
+func (r *Renter) ActiveHosts(tree string) []modules.HostDBEntry { return r.hostDB.ActiveHosts(tree) }
 
 // AddHostDBProfiles adds a new hostdb profile.
 func (r *Renter) AddHostDBProfiles(name string, storagetier string) (err error) {
@@ -319,7 +321,7 @@ func (r *Renter) AddHostDBProfiles(name string, storagetier string) (err error) 
 }
 
 // AllHosts returns an array of all hosts
-func (r *Renter) AllHosts() []modules.HostDBEntry { return r.hostDB.AllHosts() }
+func (r *Renter) AllHosts(tree string) []modules.HostDBEntry { return r.hostDB.AllHosts(tree) }
 
 // Host returns the host associated with the given public key
 func (r *Renter) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) { return r.hostDB.Host(spk) }

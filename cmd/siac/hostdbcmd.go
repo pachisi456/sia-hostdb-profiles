@@ -45,14 +45,16 @@ var (
 	hostdbProfilesAddCmd = &cobra.Command{
 		Use:   "add [name] [storagetier]",
 		Short: "Add a hostdb profile.",
-		Long: `Add a hostdb profile that uses custom settings for the host selection. When
-uploading a file you can then specify under what profile your file should be uploaded.
+		Long: `Add a hostdb profile that uses custom settings for the
+host selection. When uploading a file you can then specify under what
+profile your file should be uploaded.
 
 [name] will be the name for the profile.
 
-[storagetier] is a parameter to set preference for either price or performance. You can
-choose between "cold", "warm" and "hot". "cold" will pick cheap hosts with less performance
-while "hot" will pick high-performance but more expensive hosts. "warm" is the default setting
+[storagetier] is a parameter to set preference for either price or
+performance. You can choose between "cold", "warm" and "hot". "cold"
+will pick cheap hosts with less performance while "hot" will pick 
+high-performance but more expensive hosts. "warm" is the default setting
 and makes a reasonable compromise between price and performance.
 `,
 		Run: wrap(hostdbprofilesaddcmd),

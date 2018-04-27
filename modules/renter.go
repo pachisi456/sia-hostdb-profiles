@@ -304,13 +304,13 @@ type ContractorSpending struct {
 type Renter interface {
 	// ActiveHosts provides the list of hosts that the renter is selecting,
 	// sorted by preference.
-	ActiveHosts() []HostDBEntry
+	ActiveHosts(string) []HostDBEntry
 
 	// AddHostDBProfiles adds a new hostdb profile.
 	AddHostDBProfiles(string, string) error
 
 	// AllHosts returns the full list of hosts known to the renter.
-	AllHosts() []HostDBEntry
+	AllHosts(string) []HostDBEntry
 
 	// Close closes the Renter.
 	Close() error

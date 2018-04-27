@@ -57,7 +57,9 @@ func (hdb *HostDB) AddHostDBProfiles(name string, storagetier string) (err error
 
 	// write data back to the hostdb and save it
 	hdb.hostdbProfiles.Profiles = hdbp.Profiles
+	hdb.mu.Lock()
 	err = hdb.saveSync()
+	hdb.mu.Unlock()
 	if err != nil {
 		hdb.log.Println("Unable to save the hostdb profile:", err)
 	}
@@ -82,5 +84,3 @@ func (hdb *HostDB) ProfileExists(name string) (exists bool, index int) {
 	}
 	return
 }
-
-

@@ -74,7 +74,8 @@ func (c *Contractor) managedMarkContractsUtility() error {
 	c.mu.RLock()
 	hostCount := int(c.allowance.Hosts)
 	c.mu.RUnlock()
-	hosts := c.hdb.RandomHosts(hostCount+minScoreHostBuffer, nil)
+	//TODO pachisi456: add support for multiple profiles / trees
+	hosts := c.hdb.RandomHosts("default", hostCount+minScoreHostBuffer, nil)
 
 	// Find the minimum score that a host is allowed to have to be considered
 	// good for upload.
@@ -585,7 +586,8 @@ func (c *Contractor) threadedContractMaintenance() {
 	}
 	initialContractFunds := c.allowance.Funds.Div64(c.allowance.Hosts).Div64(3)
 	c.mu.RUnlock()
-	hosts := c.hdb.RandomHosts(neededContracts*2+10, exclude)
+	//TODO pachisi456: add support for multiple profiles / trees
+	hosts := c.hdb.RandomHosts("default", neededContracts*2+10, exclude)
 
 	// Form contracts with the hosts one at a time, until we have enough
 	// contracts.

@@ -41,7 +41,7 @@ type (
 // hosts.
 func (api *API) hostdbActiveHandler(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var numHosts uint64
-	hosts := api.renter.ActiveHosts()
+	hosts := api.renter.ActiveHosts("default") //TODO pachisi456: add support for multiple profiles / trees
 
 	if req.FormValue("numhosts") == "" {
 		// Default value for 'numhosts' is all of them.
@@ -77,7 +77,7 @@ func (api *API) hostdbActiveHandler(w http.ResponseWriter, req *http.Request, _ 
 // hostdbAllHandler handles the API call asking for the list of all hosts.
 func (api *API) hostdbAllHandler(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	// Get the set of all hosts and convert them into extended hosts.
-	hosts := api.renter.AllHosts()
+	hosts := api.renter.AllHosts("default") //TODO pachisi456: add support for multiple profiles / trees
 	var extendedHosts []ExtendedHostDBEntry
 	for _, host := range hosts {
 		extendedHosts = append(extendedHosts, ExtendedHostDBEntry{
