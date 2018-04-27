@@ -132,3 +132,16 @@ func (api *API) hostDBProfilesAddHandler(w http.ResponseWriter, req *http.Reques
 	}
 	WriteSuccess(w)
 }
+
+// hostDBProfilesConfigHandler handles the API call to change a setting of a hostdb profile.
+func (api *API) hostDBProfilesConfigHandler(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	name := req.FormValue("name")
+	setting := req.FormValue("setting")
+	value := req.FormValue("value")
+	err := api.renter.ConfigHostDBProfiles(name, setting, value)
+	if err != nil {
+		WriteError(w, Error{err.Error()}, http.StatusBadRequest)
+		return
+	}
+	WriteSuccess(w)
+}

@@ -72,6 +72,10 @@ type hostDB interface {
 	// Close closes the hostdb.
 	Close() error
 
+	// ConfigHostDBProfiles updates the provided setting of the hostdb profile with the
+	// provided name to the provided value. All parameters are checked for validity.
+	ConfigHostDBProfiles(name, setting, value string) (err error)
+
 	// Host returns the HostDBEntry for a given host.
 	Host(types.SiaPublicKey) (modules.HostDBEntry, bool)
 
@@ -328,6 +332,12 @@ func (r *Renter) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) { retu
 
 // HostDBProfiles returns the array with hostdb profiles.
 func (r *Renter) HostDBProfiles() modules.HostDBProfiles { return r.hostDB.HostDBProfiles() }
+
+// ConfigHostDBProfiles updates the provided setting of the hostdb profile with the
+// provided name to the provided value. All parameters are checked for validity.
+func (r *Renter) ConfigHostDBProfiles(name, setting, value string) (err error) {
+	return r.hostDB.ConfigHostDBProfiles(name, setting, value)
+}
 
 // ScoreBreakdown returns the score breakdown
 func (r *Renter) ScoreBreakdown(e modules.HostDBEntry) modules.HostScoreBreakdown {

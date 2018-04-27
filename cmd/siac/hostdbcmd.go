@@ -74,7 +74,9 @@ pick high-performance but more expensive hosts. "warm" is the default setting
 and makes a reasonable compromise between price and performance.
 
 For the [value] of "addlocation" or "removelocation" you can simply type down
-the according country or region (e.g. "germany" or "eu").
+the according country or region (e.g. "germany" or "eu"). Siad will only form
+contracts with hosts in the whitelisted locations. If no location is provided
+at all siad will pick hosts from all over the world.
 `,
 		Run: wrap(hostdbprofilesconfigcmd),
 	}

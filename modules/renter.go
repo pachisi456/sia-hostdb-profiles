@@ -315,6 +315,10 @@ type Renter interface {
 	// Close closes the Renter.
 	Close() error
 
+	// ConfigHostDBProfiles updates the provided setting of the hostdb profile with the
+	// provided name to the provided value. All parameters are checked for validity.
+	ConfigHostDBProfiles(name, setting, value string) (err error)
+
 	// Contracts returns the contracts formed by the renter.
 	Contracts() []RenterContract
 
