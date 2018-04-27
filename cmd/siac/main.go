@@ -99,6 +99,7 @@ func main() {
 	hostdbCmd.Flags().BoolVarP(&hostdbVerbose, "verbose", "v", false, "Display full hostdb information")
 
 	hostdbProfilesCmd.AddCommand(hostdbProfilesAddCmd)
+	hostdbProfilesCmd.AddCommand(hostdbProfilesConfigCmd)
 
 	root.AddCommand(minerCmd)
 	minerCmd.AddCommand(minerStartCmd, minerStopCmd)

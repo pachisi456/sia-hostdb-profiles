@@ -34,10 +34,21 @@ func (c *Client) HostDbProfilesGet() (hdbp []modules.HostDBProfile, err error) {
 
 // HostDbProfilesAddPost posts a new profile to add to the hostdb profiles
 // API route /hostdb/profiles/add
-func (c *Client) HostDbProfilesAddPost(name string, storagetier string) (err error) {
+func (c *Client) HostDbProfilesAddPost(name, storagetier string) (err error) {
 	values := url.Values{}
 	values.Set("name", name)
 	values.Set("storagetier", storagetier)
 	err = c.post("/hostdb/profiles/add", values.Encode(), nil)
+	return
+}
+
+// HostDbProfilesConfigPost posts a config to a hostdb profile. API route
+// /hostdb/profiles/config
+func (c *Client) HostDbProfilesConfigPost(name, setting, value string) (err error) {
+	values := url.Values{}
+	values.Set("name", name)
+	values.Set("setting", setting)
+	values.Set("value", value)
+	err = c.post("/hostdb/profiles/config", values.Encode(), nil)
 	return
 }

@@ -59,6 +59,25 @@ and makes a reasonable compromise between price and performance.
 `,
 		Run: wrap(hostdbprofilesaddcmd),
 	}
+
+	hostdbProfilesConfigCmd = &cobra.Command{
+		Use:   "config [name] [setting] [value]",
+		Short: "Edit a hostdb profile.",
+		Long: `Edit a hostdb profile to customize the way hosts are selected.
+
+Add to the command the [name] of the profile you want to edit and the
+[setting] ("storagetier", "addlocation" or "removelocation") you want to edit.
+
+For the [value] of "storagetier" you can choose between "cold", "warm" and 
+"hot". "cold" will pick cheap hosts with less performance while "hot" will
+pick high-performance but more expensive hosts. "warm" is the default setting
+and makes a reasonable compromise between price and performance.
+
+For the [value] of "addlocation" or "removelocation" you can simply type down
+the according country or region (e.g. "germany" or "eu").
+`,
+		Run: wrap(hostdbprofilesconfigcmd),
+	}
 )
 
 // printScoreBreakdown prints the score breakdown of a host, provided the info.
@@ -371,10 +390,18 @@ func hostdbprofilescmd() {
 	}
 }
 
-func hostdbprofilesaddcmd(name string, storagetier string) {
+func hostdbprofilesaddcmd(name, storagetier string) {
 	err := httpClient.HostDbProfilesAddPost(name, storagetier)
 	if err != nil {
 		die("Could not add hostdb profile:", err)
 	}
 	fmt.Println("Added hostdb profile", name)
+}
+
+func hostdbprofilesconfigcmd(name, setting, value string) {
+	err := httpClient.HostDbProfilesConfigPost(name, setting, value)
+	if err != nil {
+		die("Could not edit hostdb profile:", err)
+	}
+	fmt.Println("Profile \"" + name + "\" has been edited successfully.")
 }
