@@ -352,11 +352,11 @@ type Renter interface {
 
 	// EstimateHostScore will return the score for a host with the provided
 	// settings, assuming perfect age and uptime adjustments
-	EstimateHostScore(entry HostDBEntry) HostScoreBreakdown
+	EstimateHostScore(entry HostDBEntry, hostdbprofile string) HostScoreBreakdown
 
 	// ScoreBreakdown will return the score for a host db entry using the
 	// hostdb's weighting algorithm.
-	ScoreBreakdown(entry HostDBEntry) HostScoreBreakdown
+	ScoreBreakdown(entry HostDBEntry, hostdbprofile string) HostScoreBreakdown
 
 	// Settings returns the Renter's current settings.
 	Settings() RenterSettings

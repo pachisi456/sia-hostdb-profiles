@@ -74,6 +74,13 @@ func (hdbp *HostDBProfiles) ConfigHostDBProfiles(name, setting, value string) (e
 	return hdbp.profiles[name].configHostDBProfile(setting, value)
 }
 
+// getProfile returns the hostdb profile with the given name.
+func (hdbp *HostDBProfiles) GetProfile(name string) HostDBProfile {
+	hdbp.mu.Lock()
+	defer hdbp.mu.Unlock()
+	return *hdbp.profiles[name]
+}
+
 // HostDBProfiles returns the array of set hostdb profiles.
 func (hdbp *HostDBProfiles) HostDBProfiles() map[string]*HostDBProfile {
 	hdbp.mu.Lock()

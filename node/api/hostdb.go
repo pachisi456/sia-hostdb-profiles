@@ -102,7 +102,8 @@ func (api *API) hostdbHostsHandler(w http.ResponseWriter, req *http.Request, ps 
 		WriteError(w, Error{"requested host does not exist"}, http.StatusBadRequest)
 		return
 	}
-	breakdown := api.renter.ScoreBreakdown(entry)
+	//TODO pachisi456: add support for multiple trees/profiles
+	breakdown := api.renter.ScoreBreakdown(entry, "default")
 
 	// Extend the hostdb entry  to have the public key string.
 	extendedEntry := ExtendedHostDBEntry{

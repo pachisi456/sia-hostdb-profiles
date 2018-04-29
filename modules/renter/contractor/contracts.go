@@ -81,9 +81,10 @@ func (c *Contractor) managedMarkContractsUtility() error {
 	// good for upload.
 	var minScore types.Currency
 	if len(hosts) > 0 {
-		lowestScore := c.hdb.ScoreBreakdown(hosts[0]).Score
+		//TODO pachisi456: add support for multiple profiles / trees
+		lowestScore := c.hdb.ScoreBreakdown(hosts[0], "default").Score
 		for i := 1; i < len(hosts); i++ {
-			score := c.hdb.ScoreBreakdown(hosts[i]).Score
+			score := c.hdb.ScoreBreakdown(hosts[i], "default").Score
 			if score.Cmp(lowestScore) < 0 {
 				lowestScore = score
 			}
@@ -107,7 +108,8 @@ func (c *Contractor) managedMarkContractsUtility() error {
 				return
 			}
 			// Contract has no utility if the score is poor.
-			if !minScore.IsZero() && c.hdb.ScoreBreakdown(host).Score.Cmp(minScore) < 0 {
+			//TODO pachisi456: add support for multiple profiles / trees
+			if !minScore.IsZero() && c.hdb.ScoreBreakdown(host, "default").Score.Cmp(minScore) < 0 {
 				u.GoodForUpload = false
 				u.GoodForRenew = false
 				return

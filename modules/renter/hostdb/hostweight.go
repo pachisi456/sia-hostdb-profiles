@@ -132,7 +132,7 @@ func (hdb *HostDB) interactionAdjustments(entry modules.HostDBEntry) float64 {
 
 // priceAdjustments will adjust the weight of the entry according to the prices
 // that it has set.
-func (hdb *HostDB) priceAdjustments(entry modules.HostDBEntry) float64 {
+func (hdb *HostDB) priceAdjustments(entry modules.HostDBEntry, hostdbprofile string) float64 {
 	// Sanity checks - the constants values need to have certain relationships
 	// to eachother
 	if build.DEBUG {
@@ -162,6 +162,21 @@ func (hdb *HostDB) priceAdjustments(entry modules.HostDBEntry) float64 {
 	adjustedUploadPrice := entry.UploadBandwidthPrice.Div64(24192)              // Adjust upload price to match a single upload over 24 weeks.
 	adjustedDownloadPrice := entry.DownloadBandwidthPrice.Div64(12096).Div64(3) // Adjust download price to match one download over 12 weeks, 1 redundancy.
 	siafundFee := adjustedContractPrice.Add(adjustedUploadPrice).Add(adjustedDownloadPrice).Add(entry.Collateral).MulTax()
+
+	// weigh prices, depending on the storage tier
+	hdbp := hdb.hostdbProfiles.GetProfile(hostdbprofile)
+	switch hdbp.Storagetier {
+	case "cold":
+		// prefer hosts with cheap storage
+		adjustedContractPrice = adjustedContractPrice.Mul64(2)
+	case "warm":
+		// prices are equally weighed, so nothing needs to be done here
+	case "hot":
+		// prefer hosts with cheap bandwidth
+		adjustedUploadPrice = adjustedUploadPrice.Mul64(2)
+		adjustedDownloadPrice = adjustedDownloadPrice.Mul64(2)
+	}
+
 	totalPrice := entry.StoragePrice.Add(adjustedContractPrice).Add(adjustedUploadPrice).Add(adjustedDownloadPrice).Add(siafundFee)
 
 	// Set a minimum on the price, then normalize to a sane precision.
@@ -369,12 +384,10 @@ func (hdb *HostDB) uptimeAdjustments(entry modules.HostDBEntry) float64 {
 // calculateHostWeight returns the weight of a host according to the settings of
 // the host database entry.
 func (hdb *HostDB) calculateHostWeight(entry modules.HostDBEntry, hostdbprofile string) types.Currency {
-	//TODO pachisi456 utilize hdbp
-
 	collateralReward := hdb.collateralAdjustments(entry)
 	interactionPenalty := hdb.interactionAdjustments(entry)
 	lifetimePenalty := hdb.lifetimeAdjustments(entry)
-	pricePenalty := hdb.priceAdjustments(entry)
+	pricePenalty := hdb.priceAdjustments(entry, hostdbprofile)
 	storageRemainingPenalty := storageRemainingAdjustments(entry)
 	uptimePenalty := hdb.uptimeAdjustments(entry)
 	versionPenalty := versionAdjustments(entry)
@@ -411,13 +424,13 @@ func (hdb *HostDB) calculateConversionRate(score types.Currency) float64 {
 	return conversionRate
 }
 
-// EstimateHostScore takes a HostExternalSettings and returns the estimated
-// score of that host in the hostdb, assuming no penalties for age or uptime.
-func (hdb *HostDB) EstimateHostScore(entry modules.HostDBEntry) modules.HostScoreBreakdown {
+// EstimateHostScore takes a HostExternalSettings and returns the estimated score of that host in the hostdb,
+// assuming no penalties for age or uptime. As arguments the HostDBEntry and the name of the hostdb profile are given.
+func (hdb *HostDB) EstimateHostScore(entry modules.HostDBEntry, hostdbprofile string) modules.HostScoreBreakdown {
 	// Grab the adjustments. Age, and uptime penalties are set to '1', to
 	// assume best behavior from the host.
 	collateralReward := hdb.collateralAdjustments(entry)
-	pricePenalty := hdb.priceAdjustments(entry)
+	pricePenalty := hdb.priceAdjustments(entry, hostdbprofile)
 	storageRemainingPenalty := storageRemainingAdjustments(entry)
 	versionPenalty := versionAdjustments(entry)
 
@@ -444,9 +457,9 @@ func (hdb *HostDB) EstimateHostScore(entry modules.HostDBEntry) modules.HostScor
 	}
 }
 
-// ScoreBreakdown provdes a detailed set of scalars and bools indicating
-// elements of the host's overall score.
-func (hdb *HostDB) ScoreBreakdown(entry modules.HostDBEntry) modules.HostScoreBreakdown {
+// ScoreBreakdown provides a detailed set of scalars and bools indicating elements of the
+// host's overall score. As arguments the HostDBEntry and the name of the hostdb profile are given.
+func (hdb *HostDB) ScoreBreakdown(entry modules.HostDBEntry, hostdbprofile string) modules.HostScoreBreakdown {
 	hdb.mu.Lock()
 	defer hdb.mu.Unlock()
 
@@ -460,7 +473,7 @@ func (hdb *HostDB) ScoreBreakdown(entry modules.HostDBEntry) modules.HostScoreBr
 		BurnAdjustment:             1,
 		CollateralAdjustment:       hdb.collateralAdjustments(entry),
 		InteractionAdjustment:      hdb.interactionAdjustments(entry),
-		PriceAdjustment:            hdb.priceAdjustments(entry),
+		PriceAdjustment:            hdb.priceAdjustments(entry, hostdbprofile),
 		StorageRemainingAdjustment: storageRemainingAdjustments(entry),
 		UptimeAdjustment:           hdb.uptimeAdjustments(entry),
 		VersionAdjustment:          versionAdjustments(entry),

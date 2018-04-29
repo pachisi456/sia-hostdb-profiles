@@ -90,11 +90,11 @@ type hostDB interface {
 
 	// ScoreBreakdown returns a detailed explanation of the various properties
 	// of the host.
-	ScoreBreakdown(modules.HostDBEntry) modules.HostScoreBreakdown
+	ScoreBreakdown(modules.HostDBEntry, string) modules.HostScoreBreakdown
 
 	// EstimateHostScore returns the estimated score breakdown of a host with the
 	// provided settings.
-	EstimateHostScore(modules.HostDBEntry) modules.HostScoreBreakdown
+	EstimateHostScore(modules.HostDBEntry, string) modules.HostScoreBreakdown
 }
 
 // A hostContractor negotiates, revises, renews, and provides access to file
@@ -341,13 +341,13 @@ func (r *Renter) ConfigHostDBProfiles(name, setting, value string) (err error) {
 }
 
 // ScoreBreakdown returns the score breakdown
-func (r *Renter) ScoreBreakdown(e modules.HostDBEntry) modules.HostScoreBreakdown {
-	return r.hostDB.ScoreBreakdown(e)
+func (r *Renter) ScoreBreakdown(e modules.HostDBEntry, hostdbprofile string) modules.HostScoreBreakdown {
+	return r.hostDB.ScoreBreakdown(e, hostdbprofile)
 }
 
 // EstimateHostScore returns the estimated host score
-func (r *Renter) EstimateHostScore(e modules.HostDBEntry) modules.HostScoreBreakdown {
-	return r.hostDB.EstimateHostScore(e)
+func (r *Renter) EstimateHostScore(e modules.HostDBEntry, hostdbprofile string) modules.HostScoreBreakdown {
+	return r.hostDB.EstimateHostScore(e, hostdbprofile)
 }
 
 // Contracts returns an array of host contractor's contracts

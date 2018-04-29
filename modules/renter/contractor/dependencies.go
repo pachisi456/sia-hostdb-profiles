@@ -53,7 +53,7 @@ type (
 		IncrementSuccessfulInteractions(key types.SiaPublicKey)
 		IncrementFailedInteractions(key types.SiaPublicKey)
 		RandomHosts(tree string, n int, exclude []types.SiaPublicKey) []modules.HostDBEntry
-		ScoreBreakdown(modules.HostDBEntry) modules.HostScoreBreakdown
+		ScoreBreakdown(modules.HostDBEntry, string) modules.HostScoreBreakdown
 	}
 
 	persister interface {
