@@ -24,8 +24,8 @@ type HostDBProfiles struct {
 	mu       sync.Mutex
 }
 
-// NewHostDBProfiles creates a nes HostDBProfiles object and initializes it with
-// the default hostdb profile.
+// NewHostDBProfiles creates a new HostDBProfiles object and initializes it with the
+// default hostdb profile.
 func NewHostDBProfiles() HostDBProfiles {
 	hdbp := make(map[string]*HostDBProfile)
 	hdbp["default"] = &HostDBProfile{

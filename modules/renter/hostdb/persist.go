@@ -59,7 +59,11 @@ func (hdb *HostDB) load() (error, []modules.HostDBEntry) {
 	}
 
 	// Set the hostdb internal values.
-	hdb.hostdbProfiles.SetHostDBProfiles(data.Profiles)
+	if data.Profiles != nil {
+		// if no hostdb profile data could be loaded the calling function will add
+		// the default profile
+		hdb.hostdbProfiles.SetHostDBProfiles(data.Profiles)
+	}
 	hdb.blockHeight = data.BlockHeight
 	hdb.lastChange = data.LastChange
 	return nil, data.AllHosts

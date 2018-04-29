@@ -40,13 +40,17 @@ var (
 
 type (
 	// WeightFunc is a function used to weight a given HostDBEntry in the tree.
-	WeightFunc func(modules.HostDBEntry) types.Currency
+	WeightFunc func(modules.HostDBEntry, string) types.Currency
 
 	// HostTree is used to store and select host database entries. Each HostTree
 	// is initialized with a weighting func that is able to assign a weight to
 	// each entry. The entries can then be selected at random, weighted by the
 	// weight func.
 	HostTree struct {
+		// name should equal the name of the hostdb profile this tree is created for
+		name string
+
+		// root is the root node of the host tree
 		root *node
 
 		// hosts is a map of public keys to nodes.
@@ -54,8 +58,6 @@ type (
 
 		// weightFn calculates the weight of a hostEntry
 		weightFn WeightFunc
-
-		//TODO pachisi456: add field *Hdbp ?? no, if hostweight will operate on hdbp
 
 		mu sync.Mutex
 	}
@@ -92,10 +94,12 @@ func createNode(parent *node, entry *hostEntry) *node {
 	}
 }
 
-// NewHostTree creates a new, empty, HostTree. It takes one argument, a `WeightFunc`,
-// which is used to determine the weight of a node on Insert.
-func NewHostTree(wf WeightFunc) *HostTree {
+// NewHostTree creates a new, empty, HostTree. It takes as arguments a `WeightFunc`,
+// which is used to determine the weight of a node on Insert and the name for the tree
+// which should equal the name of the hostdb profile this tree is created for.
+func NewHostTree(wf WeightFunc, name string) *HostTree {
 	return &HostTree{
+		name: name,
 		root: &node{
 			count: 1,
 		},
@@ -211,7 +215,7 @@ func (ht *HostTree) All() []modules.HostDBEntry {
 func (ht *HostTree) Insert(hdbe modules.HostDBEntry) error {
 	entry := &hostEntry{
 		HostDBEntry: hdbe,
-		weight:      ht.weightFn(hdbe),
+		weight:      ht.weightFn(hdbe, ht.name),
 	}
 
 	if _, exists := ht.hosts[string(entry.PublicKey.Key)]; exists {
@@ -248,7 +252,7 @@ func (ht *HostTree) Modify(hdbe modules.HostDBEntry) error {
 
 	entry := &hostEntry{
 		HostDBEntry: hdbe,
-		weight:      ht.weightFn(hdbe),
+		weight:      ht.weightFn(hdbe, ht.name),
 	}
 
 	_, node = ht.root.recursiveInsert(entry)

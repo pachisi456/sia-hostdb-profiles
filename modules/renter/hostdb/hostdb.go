@@ -83,10 +83,14 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 		persistDir: persistDir,
 
 		hostdbProfiles: hostdbprofile.NewHostDBProfiles(),
-		hostTrees:      hosttree.NewHostTrees(),
 
 		scanMap: make(map[string]struct{}),
 	}
+
+	// add the HostTrees element and initialize it with the default tree
+	hdb.mu.Lock()
+	hdb.hostTrees = hosttree.NewHostTrees()
+	hdb.mu.Unlock()
 
 	// Create the persist directory if it does not yet exist.
 	err := os.MkdirAll(persistDir, 0700)
@@ -112,15 +116,6 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 	hdb.mu.Unlock()
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
-	}
-
-	// Make sure the default hostdb profile is set.
-	hdbp := hdb.HostDBProfiles()
-	if len(hdbp) < 1 {
-		err := hdb.hostdbProfiles.AddHostDBProfile("default", "warm")
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// Load the host trees, one tree for each hostdb profile.
@@ -281,38 +276,39 @@ func (hdb *HostDB) ConfigHostDBProfile(name, setting, value string) (err error) 
 // loadHostTrees loads one host tree for each hostdb profile.
 // The host tree is used to manage hosts and query them at random.
 func (hdb *HostDB) loadHostTrees(allHosts []modules.HostDBEntry) (err error) {
-	//TODO pachisi456: load host trees for all profiles here
-	hdb.hostTrees.AddHostTree("default", *hosttree.NewHostTree(hdb.calculateHostWeight))
-	for _, host := range allHosts {
-		// COMPATv1.1.0
-		//
-		// The host did not always track its block height correctly, meaning
-		// that previously the FirstSeen values and the blockHeight values
-		// could get out of sync.
-		if hdb.blockHeight < host.FirstSeen {
-			host.FirstSeen = hdb.blockHeight
+	hdbp := hdb.hostdbProfiles.HostDBProfiles()
+	for name := range hdbp {
+		newTree := hosttree.NewHostTree(hdb.calculateHostWeight, name)
+		for _, host := range allHosts {
+			// COMPATv1.1.0
+			//
+			// The host did not always track its block height correctly, meaning
+			// that previously the FirstSeen values and the blockHeight values
+			// could get out of sync.
+			if hdb.blockHeight < host.FirstSeen {
+				host.FirstSeen = hdb.blockHeight
+			}
+
+			err := newTree.Insert(host)
+			if err != nil {
+				hdb.log.Debugln("ERROR: could not insert host while loading:", host.NetAddress)
+			}
+
+			// Make sure that all hosts have gone through the initial scanning.
+			if len(host.ScanHistory) < 2 {
+				hdb.mu.Lock()
+				hdb.queueScan(host)
+				hdb.mu.Unlock()
+			}
 		}
+		err := hdb.hostTrees.AddHostTree(name, *newTree)
 
-		//fmt.Println(3, ht.Trees["default"])
-
-		err := hdb.hostTrees.Insert(host)
+		hdb.mu.Lock()
+		err = hdb.saveSync()
+		hdb.mu.Unlock()
 		if err != nil {
-			hdb.log.Debugln("ERROR: could not insert host while loading:", host.NetAddress)
+			hdb.log.Println("Unable to save the host tree:", err)
 		}
-
-		// Make sure that all hosts have gone through the initial scanning.
-		if len(host.ScanHistory) < 2 {
-			hdb.mu.Lock()
-			hdb.queueScan(host)
-			hdb.mu.Unlock()
-		}
-	}
-
-	hdb.mu.Lock()
-	err = hdb.saveSync()
-	hdb.mu.Unlock()
-	if err != nil {
-		hdb.log.Println("Unable to save the hostdb:", err)
 	}
 	return
 }

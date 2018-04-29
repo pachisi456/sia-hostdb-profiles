@@ -368,7 +368,9 @@ func (hdb *HostDB) uptimeAdjustments(entry modules.HostDBEntry) float64 {
 
 // calculateHostWeight returns the weight of a host according to the settings of
 // the host database entry.
-func (hdb *HostDB) calculateHostWeight(entry modules.HostDBEntry) types.Currency {
+func (hdb *HostDB) calculateHostWeight(entry modules.HostDBEntry, hostdbprofile string) types.Currency {
+	//TODO pachisi456 utilize hdbp
+
 	collateralReward := hdb.collateralAdjustments(entry)
 	interactionPenalty := hdb.interactionAdjustments(entry)
 	lifetimePenalty := hdb.lifetimeAdjustments(entry)
@@ -395,9 +397,9 @@ func (hdb *HostDB) calculateHostWeight(entry modules.HostDBEntry) types.Currency
 // percentage of contracts it is likely to participate in.
 func (hdb *HostDB) calculateConversionRate(score types.Currency) float64 {
 	var totalScore types.Currency
-	for _, h := range hdb.ActiveHosts("default") { //TODO pachisi456: add support for multiple trees (make
-		// all functions here operate on hostdb profiles so they can access the respective settings)
-		totalScore = totalScore.Add(hdb.calculateHostWeight(h))
+	//TODO pachisi456: add support for multiple trees
+	for _, h := range hdb.ActiveHosts("default") {
+		totalScore = totalScore.Add(hdb.calculateHostWeight(h, "default"))
 	}
 	if totalScore.IsZero() {
 		totalScore = types.NewCurrency64(1)
@@ -448,7 +450,8 @@ func (hdb *HostDB) ScoreBreakdown(entry modules.HostDBEntry) modules.HostScoreBr
 	hdb.mu.Lock()
 	defer hdb.mu.Unlock()
 
-	score := hdb.calculateHostWeight(entry)
+	// TODO pachisi456: add support for multiple trees
+	score := hdb.calculateHostWeight(entry, "default")
 	return modules.HostScoreBreakdown{
 		Score:          score,
 		ConversionRate: hdb.calculateConversionRate(score),

@@ -13,12 +13,11 @@ type HostTrees struct {
 	mu    sync.Mutex
 }
 
-// NewHostTrees returns a new HostTrees object containing the default tree.
+// NewHostTrees creates a new, empty HostTrees object.
 func NewHostTrees() HostTrees {
 	ht := HostTrees{
 		trees: make(map[string]*HostTree),
 	}
-	//TODO pachisi456: add default host tree (otherwise adjust doc above)
 	return ht
 }
 
