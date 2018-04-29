@@ -16,6 +16,7 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/persist"
 	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
 )
 
 var (
@@ -38,7 +39,7 @@ type HostDB struct {
 
 	// hostdbProfiles is the collection of all hostdb profiles the renter created to
 	// customize the host selection.
-	hostdbProfiles modules.HostDBProfiles
+	hostdbProfiles hostdbprofile.HostDBProfiles
 
 	// hostTrees contains a HostTree for each HostDBProfile. The trees are necessary
 	// for selecting weighted hosts at random.
@@ -81,8 +82,10 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 		gateway:    g,
 		persistDir: persistDir,
 
-		hostTrees: hosttree.NewHostTrees(),
-		scanMap:   make(map[string]struct{}),
+		hostdbProfiles: hostdbprofile.NewHostDBProfiles("default", "warm"),
+		hostTrees:      hosttree.NewHostTrees(),
+
+		scanMap: make(map[string]struct{}),
 	}
 
 	// Create the persist directory if it does not yet exist.
@@ -111,12 +114,14 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 		return nil, err
 	}
 
-	hdb.hostdbProfiles.Mu.Lock()
 	// Make sure the default hostdb profile is set.
-	if len(hdb.hostdbProfiles.Profiles) < 1 {
-		hdb.hostdbProfiles.Profiles = append(hdb.hostdbProfiles.Profiles, NewHostDBProfile("default", "warm"))
+	hdbp := hdb.HostDBProfiles()
+	if len(hdbp) < 1 {
+		err := hdb.hostdbProfiles.AddHostDBProfile("default", "warm")
+		if err != nil {
+			return nil, err
+		}
 	}
-	hdb.hostdbProfiles.Mu.Unlock()
 
 	// Load the host trees, one tree for each hostdb profile.
 	hdb.loadHostTrees(allHosts)
@@ -196,6 +201,24 @@ func (hdb *HostDB) ActiveHosts(tree string) (activeHosts []modules.HostDBEntry) 
 	return activeHosts
 }
 
+// AddHostDBProfile adds a new hostdb profile to HostDBProfiles.
+func (hdb *HostDB) AddHostDBProfiles(name string, storagetier string) (err error) {
+	// add profile
+	err = hdb.hostdbProfiles.AddHostDBProfile(name, storagetier)
+	if err != nil {
+		return err
+	}
+
+	// save to persistence data
+	hdb.mu.Lock()
+	err = hdb.saveSync()
+	hdb.mu.Unlock()
+	if err != nil {
+		hdb.log.Println("Unable to save the hostdb profile:", err)
+	}
+	return
+}
+
 // AllHosts returns all of the hosts of the specified host tree, including the
 // inactive ones.
 func (hdb *HostDB) AllHosts(tree string) (allHosts []modules.HostDBEntry) {
@@ -234,23 +257,30 @@ func (hdb *HostDB) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 	return host, exists
 }
 
+// HostDBProfiles returns the array of all set hostdb profiles.
+func (hdb *HostDB) HostDBProfiles() (hdbp []hostdbprofile.HostDBProfile) {
+	return hdb.hostdbProfiles.HostDBProfiles()
+}
+
+// ConfigHostDBProfiles updates the provided setting of the hostdb profile with the provided
+// name to the provided value.
+func (hdb *HostDB) ConfigHostDBProfile(name, setting, value string) (err error) {
+	// change setting
+	err = hdb.hostdbProfiles.ConfigHostDBProfiles(name, setting, value)
+	if err != nil {
+		return err
+	}
+
+	// save to persist data
+	hdb.mu.Lock()
+	hdb.saveSync()
+	hdb.mu.Unlock()
+	return
+}
+
 // loadHostTrees loads one host tree for each hostdb profile.
 // The host tree is used to manage hosts and query them at random.
 func (hdb *HostDB) loadHostTrees(allHosts []modules.HostDBEntry) (err error) {
-	hdb.hostdbProfiles.Mu.Lock()
-
-	// set the default hostdb profile (warm storage tier, no location
-	// specification) if no profile was found in persistence data
-	if len(hdb.hostdbProfiles.Profiles) < 1 {
-		hdb.hostdbProfiles.Profiles = append(hdb.hostdbProfiles.Profiles, modules.HostDBProfile{
-			Name:        "default",
-			Storagetier: "warm",
-			Location:    nil,
-		})
-	}
-
-	hdb.hostdbProfiles.Mu.Unlock()
-
 	//TODO pachisi456: load host trees for all profiles here
 	hdb.hostTrees.AddHostTree("default", *hosttree.NewHostTree(hdb.calculateHostWeight))
 	for _, host := range allHosts {

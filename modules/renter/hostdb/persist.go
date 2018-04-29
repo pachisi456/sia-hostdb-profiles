@@ -7,6 +7,7 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/pachisi456/sia-hostdb-profiles/persist"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
 )
 
 var (
@@ -24,7 +25,7 @@ var (
 
 // hdbPersist defines what HostDB data persists across sessions.
 type hdbPersist struct {
-	Profiles    []modules.HostDBProfile
+	Profiles    []hostdbprofile.HostDBProfile
 	AllHosts    []modules.HostDBEntry
 	BlockHeight types.BlockHeight
 	LastChange  modules.ConsensusChangeID
@@ -32,9 +33,7 @@ type hdbPersist struct {
 
 // persistData returns the data in the hostdb that will be saved to disk.
 func (hdb *HostDB) persistData() (data hdbPersist) {
-	hdb.hostdbProfiles.Mu.Lock()
-	data.Profiles = hdb.hostdbProfiles.Profiles
-	hdb.hostdbProfiles.Mu.Unlock()
+	data.Profiles = hdb.HostDBProfiles()
 
 	// This is nothing hostdb profile specific so the default host tree can be used.
 	data.AllHosts = hdb.hostTrees.All("default")
@@ -52,9 +51,6 @@ func (hdb *HostDB) saveSync() error {
 // load loads the hostdb persistence data from disk and returns all hosts found
 // in the hostdb persistence data.
 func (hdb *HostDB) load() (error, []modules.HostDBEntry) {
-	hdb.hostdbProfiles.Mu.Lock()
-	defer hdb.hostdbProfiles.Mu.Unlock()
-
 	// Fetch the data from the file.
 	var data hdbPersist
 	err := hdb.deps.LoadFile(persistMetadata, &data, filepath.Join(hdb.persistDir, persistFilename))
@@ -63,7 +59,7 @@ func (hdb *HostDB) load() (error, []modules.HostDBEntry) {
 	}
 
 	// Set the hostdb internal values.
-	hdb.hostdbProfiles.Profiles = data.Profiles
+	hdb.hostdbProfiles.SetHostDBProfiles(data.Profiles)
 	hdb.blockHeight = data.BlockHeight
 	hdb.lastChange = data.LastChange
 	return nil, data.AllHosts

@@ -3,9 +3,9 @@ package client
 import (
 	"net/url"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/pachisi456/sia-hostdb-profiles/node/api"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
 )
 
 // HostDbActiveGet requests the /hostdb/active endpoint's resources.
@@ -27,7 +27,7 @@ func (c *Client) HostDbHostsGet(pk types.SiaPublicKey) (hhg api.HostdbHostsGET, 
 }
 
 // HostDbProfilesGet requests the /hostdb/profiles endpoint's resources.
-func (c *Client) HostDbProfilesGet() (hdbp []modules.HostDBProfile, err error) {
+func (c *Client) HostDbProfilesGet() (hdbp []hostdbprofile.HostDBProfile, err error) {
 	err = c.get("/hostdb/profiles", &hdbp)
 	return
 }

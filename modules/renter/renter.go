@@ -25,6 +25,7 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/contractor"
 	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
 	"github.com/pachisi456/sia-hostdb-profiles/persist"
 	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
@@ -59,7 +60,7 @@ type hostDB interface {
 	// from.
 	ActiveHosts(string) []modules.HostDBEntry
 
-	// AddHostDBProfiles adds a new hostdb profile.
+	// AddHostDBProfile adds a new hostdb profile.
 	AddHostDBProfiles(string, string) error
 
 	// AllHosts returns the full list of hosts known to the hostdb, sorted in
@@ -72,15 +73,15 @@ type hostDB interface {
 	// Close closes the hostdb.
 	Close() error
 
-	// ConfigHostDBProfiles updates the provided setting of the hostdb profile with the
+	// ConfigHostDBProfile updates the provided setting of the hostdb profile with the
 	// provided name to the provided value. All parameters are checked for validity.
-	ConfigHostDBProfiles(name, setting, value string) (err error)
+	ConfigHostDBProfile(name, setting, value string) (err error)
 
 	// Host returns the HostDBEntry for a given host.
 	Host(types.SiaPublicKey) (modules.HostDBEntry, bool)
 
 	// HostDBProfiles returns the array with hostdb profiles.
-	HostDBProfiles() modules.HostDBProfiles
+	HostDBProfiles() []hostdbprofile.HostDBProfile
 
 	// RandomHosts returns a set of random hosts, weighted by their estimated
 	// usefulness / attractiveness to the renter. RandomHosts will not return
@@ -319,7 +320,7 @@ func (r *Renter) SetSettings(s modules.RenterSettings) error {
 // ActiveHosts returns an array of hostDB's active hosts
 func (r *Renter) ActiveHosts(tree string) []modules.HostDBEntry { return r.hostDB.ActiveHosts(tree) }
 
-// AddHostDBProfiles adds a new hostdb profile.
+// AddHostDBProfile adds a new hostdb profile.
 func (r *Renter) AddHostDBProfiles(name string, storagetier string) (err error) {
 	return r.hostDB.AddHostDBProfiles(name, storagetier)
 }
@@ -331,12 +332,12 @@ func (r *Renter) AllHosts(tree string) []modules.HostDBEntry { return r.hostDB.A
 func (r *Renter) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) { return r.hostDB.Host(spk) }
 
 // HostDBProfiles returns the array with hostdb profiles.
-func (r *Renter) HostDBProfiles() modules.HostDBProfiles { return r.hostDB.HostDBProfiles() }
+func (r *Renter) HostDBProfiles() []hostdbprofile.HostDBProfile { return r.hostDB.HostDBProfiles() }
 
 // ConfigHostDBProfiles updates the provided setting of the hostdb profile with the
 // provided name to the provided value. All parameters are checked for validity.
 func (r *Renter) ConfigHostDBProfiles(name, setting, value string) (err error) {
-	return r.hostDB.ConfigHostDBProfiles(name, setting, value)
+	return r.hostDB.ConfigHostDBProfile(name, setting, value)
 }
 
 // ScoreBreakdown returns the score breakdown

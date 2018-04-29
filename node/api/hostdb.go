@@ -118,7 +118,7 @@ func (api *API) hostdbHostsHandler(w http.ResponseWriter, req *http.Request, ps 
 // hostDBProfilesHandlerGET handles the API call asking for the list of hostdb profiles and returns such.
 func (api *API) hostDBProfilesHandlerGET(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 	hdbprofiles := api.renter.HostDBProfiles()
-	WriteJSON(w, hdbprofiles.Profiles)
+	WriteJSON(w, hdbprofiles)
 }
 
 // hostDBProfilesAddHandler handles the API call for adding a new hostdb profile
