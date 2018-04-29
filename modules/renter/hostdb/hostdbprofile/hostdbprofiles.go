@@ -18,20 +18,22 @@ var (
 )
 
 // HostDBProfiles is the collection of all hostdb profiles the renter created to
-// customize the host selection.
+// customize the host selection. The profiles are mapped by the name given by the user.
 type HostDBProfiles struct {
-	profiles []HostDBProfile
+	profiles map[string]*HostDBProfile
 	mu       sync.Mutex
 }
 
-func NewHostDBProfiles(name string, storagetier string) HostDBProfiles {
+// NewHostDBProfiles creates a nes HostDBProfiles object and initializes it with
+// the default hostdb profile.
+func NewHostDBProfiles() HostDBProfiles {
+	hdbp := make(map[string]*HostDBProfile)
+	hdbp["default"] = &HostDBProfile{
+		Storagetier: "warm",
+		Location:    nil,
+	}
 	return HostDBProfiles{
-		profiles: []HostDBProfile{{
-			Name:        "default",
-			Storagetier: "warm",
-			Location:    nil,
-		},
-		},
+		profiles: hdbp,
 	}
 }
 
@@ -41,7 +43,7 @@ func (hdbp *HostDBProfiles) AddHostDBProfile(name, storagetier string) (err erro
 	defer hdbp.mu.Unlock()
 
 	// check if hostdb profile with that name already exists
-	if exists, _ := hdbp.profileExists(name); exists {
+	if _, exists := hdbp.profiles[name]; exists {
 		return errHostdbProfileExists
 	}
 
@@ -51,11 +53,10 @@ func (hdbp *HostDBProfiles) AddHostDBProfile(name, storagetier string) (err erro
 	}
 
 	// add new hostdb profile
-	hdbp.profiles = append(hdbp.profiles, HostDBProfile{
-		Name:        name,
+	hdbp.profiles[name] = &HostDBProfile{
 		Storagetier: storagetier,
 		Location:    nil,
-	})
+	}
 	return
 }
 
@@ -66,37 +67,22 @@ func (hdbp *HostDBProfiles) ConfigHostDBProfiles(name, setting, value string) (e
 	defer hdbp.mu.Unlock()
 
 	// check if profile exists
-	exists, i := hdbp.profileExists(name)
-	if !exists {
+	if _, exists := hdbp.profiles[name]; !exists {
 		return errNoSuchHostdbProfile
 	}
 
-	return hdbp.profiles[i].configHostDBProfile(setting, value)
+	return hdbp.profiles[name].configHostDBProfile(setting, value)
 }
 
 // HostDBProfiles returns the array of set hostdb profiles.
-func (hdbp *HostDBProfiles) HostDBProfiles() []HostDBProfile {
+func (hdbp *HostDBProfiles) HostDBProfiles() map[string]*HostDBProfile {
 	hdbp.mu.Lock()
 	defer hdbp.mu.Unlock()
 	return hdbp.profiles
 }
 
-// profileExists checks whether a hostdb profile with the given `name` exists.
-// Returns true and the index the profile is located at in the HostDBProfiles.profiles
-// array if it exists, otherwise false and 0.
-func (hdbp *HostDBProfiles) profileExists(name string) (exists bool, index int) {
-	for i, v := range hdbp.profiles {
-		if name == v.Name {
-			exists = true
-			index = i
-			return
-		}
-	}
-	return
-}
-
 // SetHostDBProfiles sets the hostdb profiles to the profiles passed to the function (from persist data)
-func (hdbp *HostDBProfiles) SetHostDBProfiles(profiles []HostDBProfile) {
+func (hdbp *HostDBProfiles) SetHostDBProfiles(profiles map[string]*HostDBProfile) {
 	hdbp.profiles = profiles
 	return
 }

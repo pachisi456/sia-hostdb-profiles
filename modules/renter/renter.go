@@ -80,8 +80,8 @@ type hostDB interface {
 	// Host returns the HostDBEntry for a given host.
 	Host(types.SiaPublicKey) (modules.HostDBEntry, bool)
 
-	// HostDBProfiles returns the array with hostdb profiles.
-	HostDBProfiles() []hostdbprofile.HostDBProfile
+	// HostDBProfiles returns the map of set hostdb profiles.
+	HostDBProfiles() map[string]*hostdbprofile.HostDBProfile
 
 	// RandomHosts returns a set of random hosts, weighted by their estimated
 	// usefulness / attractiveness to the renter. RandomHosts will not return
@@ -331,8 +331,8 @@ func (r *Renter) AllHosts(tree string) []modules.HostDBEntry { return r.hostDB.A
 // Host returns the host associated with the given public key
 func (r *Renter) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) { return r.hostDB.Host(spk) }
 
-// HostDBProfiles returns the array with hostdb profiles.
-func (r *Renter) HostDBProfiles() []hostdbprofile.HostDBProfile { return r.hostDB.HostDBProfiles() }
+// HostDBProfiles returns the map of set hostdb profiles.
+func (r *Renter) HostDBProfiles() map[string]*hostdbprofile.HostDBProfile { return r.hostDB.HostDBProfiles() }
 
 // ConfigHostDBProfiles updates the provided setting of the hostdb profile with the
 // provided name to the provided value. All parameters are checked for validity.

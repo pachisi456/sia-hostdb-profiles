@@ -17,7 +17,6 @@ var (
 // HostDBProfile is a hostdb profile for customizable settings concerning the
 // selection of hosts.
 type HostDBProfile struct {
-	Name        string   `json:"hostdbprofile"`
 	Storagetier string   `json:"storagetier"`
 	Location    []string `json:"location"`
 }

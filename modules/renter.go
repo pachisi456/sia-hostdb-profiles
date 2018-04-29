@@ -332,8 +332,8 @@ type Renter interface {
 	// Host provides the DB entry and score breakdown for the requested host.
 	Host(pk types.SiaPublicKey) (HostDBEntry, bool)
 
-	// HostDBProfiles returns the array with hostdb profiles.
-	HostDBProfiles() []hostdbprofile.HostDBProfile
+	// HostDBProfiles returns the map of set hostdb profiles.
+	HostDBProfiles() map[string]*hostdbprofile.HostDBProfile
 
 	// LoadSharedFiles loads a '.sia' file into the renter. A .sia file may
 	// contain multiple files. The paths of the added files are returned.

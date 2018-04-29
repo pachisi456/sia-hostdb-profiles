@@ -25,7 +25,7 @@ var (
 
 // hdbPersist defines what HostDB data persists across sessions.
 type hdbPersist struct {
-	Profiles    []hostdbprofile.HostDBProfile
+	Profiles    map[string]*hostdbprofile.HostDBProfile
 	AllHosts    []modules.HostDBEntry
 	BlockHeight types.BlockHeight
 	LastChange  modules.ConsensusChangeID

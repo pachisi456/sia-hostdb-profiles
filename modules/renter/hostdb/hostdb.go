@@ -82,7 +82,7 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 		gateway:    g,
 		persistDir: persistDir,
 
-		hostdbProfiles: hostdbprofile.NewHostDBProfiles("default", "warm"),
+		hostdbProfiles: hostdbprofile.NewHostDBProfiles(),
 		hostTrees:      hosttree.NewHostTrees(),
 
 		scanMap: make(map[string]struct{}),
@@ -257,8 +257,8 @@ func (hdb *HostDB) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 	return host, exists
 }
 
-// HostDBProfiles returns the array of all set hostdb profiles.
-func (hdb *HostDB) HostDBProfiles() (hdbp []hostdbprofile.HostDBProfile) {
+// HostDBProfiles returns the map of all set hostdb profiles.
+func (hdb *HostDB) HostDBProfiles() (hdbp map[string]*hostdbprofile.HostDBProfile) {
 	return hdb.hostdbProfiles.HostDBProfiles()
 }
 
