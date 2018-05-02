@@ -293,15 +293,19 @@ func (hdb *HostDB) loadHostTrees(allHosts []modules.HostDBEntry) (err error) {
 			if err != nil {
 				hdb.log.Debugln("ERROR: could not insert host while loading:", host.NetAddress)
 			}
+		}
+		err := hdb.hostTrees.AddHostTree(name, *newTree)
 
-			// Make sure that all hosts have gone through the initial scanning.
+		// Make sure that all hosts have gone through the initial scanning.
+		// A new iteration over the tree is necessary as queueScan() which is
+		// called below needs a loaded and written back to the variable host tree.
+		for _, host := range hdb.hostTrees.All(name) {
 			if len(host.ScanHistory) < 2 {
 				hdb.mu.Lock()
 				hdb.queueScan(host)
 				hdb.mu.Unlock()
 			}
 		}
-		err := hdb.hostTrees.AddHostTree(name, *newTree)
 
 		hdb.mu.Lock()
 		err = hdb.saveSync()
