@@ -331,6 +331,7 @@ func hostdbviewcmd(pubkey string) {
 
 	fmt.Println("  Public Key:", info.Entry.PublicKeyString)
 	fmt.Println("  Block First Seen:", info.Entry.FirstSeen)
+	fmt.Println("  Location:", info.Entry.Country)
 
 	fmt.Println("\n  Host Settings:")
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
