@@ -225,7 +225,7 @@ func (hdb *HostDB) updateEntry(entry modules.HostDBEntry, netErr error) {
 		if err != nil {
 			fmt.Println("Could not determine host location:", err)
 		}
-		newEntry.Country = record.Country.IsoCode
+		newEntry.Country = record.Country.Names["en"]
 		newEntry.EUhost = record.Country.IsInEuropeanUnion
 	}
 

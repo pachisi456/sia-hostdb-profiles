@@ -96,7 +96,7 @@ type FileInfo struct {
 type HostDBEntry struct {
 	HostExternalSettings
 
-	// Country is the country iso code where the host is located at according to their ip.
+	// Country is the name of the country the host is located at according to their ip.
 	// EUhost is a boolean indicating whether the host is located within the european union or not.
 	Country string `json:"country"`
 	EUhost  bool   `json:"euhost"`
