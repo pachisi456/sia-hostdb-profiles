@@ -17,6 +17,7 @@ import (
 	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
 	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
+	"github.com/oschwald/geoip2-golang"
 )
 
 var (
@@ -36,6 +37,9 @@ type HostDB struct {
 	mu         sync.RWMutex
 	persistDir string
 	tg         siasync.ThreadGroup
+
+	// database with ip information to determine host location
+	ipdb *geoip2.Reader
 
 	// hostdbProfiles is the collection of all hostdb profiles the renter created to
 	// customize the host selection.
@@ -110,6 +114,15 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 			fmt.Println("Failed to close the hostdb logger:", err)
 		}
 	})
+
+	// Load the ip information database to determine host location (country).
+	db, err := geoip2.Open(filepath.Join(persistDir, "/GeoLite2/GeoLite2-Country_20180501/GeoLite2-Country.mmdb"))
+	if err != nil {
+		//TODO pachisi456: download database (rename above to enable for universal maxminddb)
+		fmt.Println("Could not load ip information database")
+	}
+	hdb.ipdb = db
+
 	// Load the prior persistence structures.
 	hdb.mu.Lock()
 	err, allHosts := hdb.load()

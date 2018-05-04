@@ -13,6 +13,7 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/encoding"
 	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/NebulousLabs/fastrand"
+	"fmt"
 )
 
 // queueScan will add a host to the queue to be scanned.
@@ -213,6 +214,19 @@ func (hdb *HostDB) updateEntry(entry modules.HostDBEntry, netErr error) {
 			newEntry.HistoricDowntime += timePassed
 		}
 		newEntry.ScanHistory = newEntry.ScanHistory[1:]
+	}
+
+	// Determine host location (country).
+	ip, err := net.LookupIP(newEntry.NetAddress.Host())
+	if err != nil || ip[0] == nil {
+		fmt.Println("Could not identify IP address of host:", err)
+	} else {
+		record, err := hdb.ipdb.Country(ip[0])
+		if err != nil {
+			fmt.Println("Could not determine host location:", err)
+		}
+		newEntry.Country = record.Country.IsoCode
+		newEntry.EUhost = record.Country.IsInEuropeanUnion
 	}
 
 	// Add the updated entry
