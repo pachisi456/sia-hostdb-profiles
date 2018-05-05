@@ -7,6 +7,7 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/build"
 	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"strings"
 )
 
 var (
@@ -57,6 +58,10 @@ var (
 // blacklistHost returns false if the provided host's country is accepted by the provided
 // hostdb profile or no location is specified in the hostdb profile, otherwise true.
 func (hdb *HostDB) blacklistHost(entry modules.HostDBEntry, hostdbprofile string) bool {
+	// Blacklist host if it does not have any location information.
+	if entry.Country == "" {
+		return true
+	}
 	// Accept hosts from all locations if no location is specified in hostdb profile.
 	hdbp := hdb.HostDBProfile(hostdbprofile)
 	if len(hdbp.Location) < 1 {
@@ -67,7 +72,7 @@ func (hdb *HostDB) blacklistHost(entry modules.HostDBEntry, hostdbprofile string
 		if l == "eu" && entry.EUhost {
 			return false
 		}
-		if l == entry.Country {
+		if l == strings.ToLower(entry.Country) {
 			return false
 		}
 	}
