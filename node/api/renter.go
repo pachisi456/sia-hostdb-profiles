@@ -115,7 +115,11 @@ type (
 
 	// RenterContracts contains the renter's contracts.
 	RenterContracts struct {
-		Contracts []RenterContract `json:"contracts"`
+		Contracts       []RenterContract `json:"contracts"`
+		Countries       []string
+		AvgStoragePrice types.Currency
+		AvgDLPrice      types.Currency
+		AvgULPrice      types.Currency
 	}
 
 	// RenterDownloadQueue contains the renter's download queue.
@@ -259,6 +263,10 @@ func (api *API) renterHandlerPOST(w http.ResponseWriter, req *http.Request, _ ht
 
 // renterContractsHandler handles the API call to request the Renter's contracts.
 func (api *API) renterContractsHandler(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+	var storagePrices types.Currency
+	var dlPrices types.Currency
+	var ulPrices types.Currency
+	var countries []string
 	contracts := []RenterContract{}
 	for _, c := range api.renter.Contracts() {
 		var size uint64
@@ -299,10 +307,24 @@ func (api *API) renterContractsHandler(w http.ResponseWriter, _ *http.Request, _
 			TotalCost:                 c.TotalCost,
 			UploadSpending:            c.UploadSpending,
 		})
+
+		// Gather location and pricing information:
+		entry, _ := api.renter.Host(c.HostPublicKey)
+		storagePrices = storagePrices.Add(entry.StoragePrice)
+		ulPrices = ulPrices.Add(entry.UploadBandwidthPrice)
+		dlPrices = dlPrices.Add(entry.DownloadBandwidthPrice)
+		countries = append(countries, entry.Country)
 	}
-	WriteJSON(w, RenterContracts{
+	rc := RenterContracts{
 		Contracts: contracts,
-	})
+		Countries: countries,
+	}
+	if len(contracts) > 0 {
+		rc.AvgStoragePrice = storagePrices.Div64(uint64(len(contracts)))
+		rc.AvgULPrice = ulPrices.Div64(uint64(len(contracts)))
+		rc.AvgDLPrice = dlPrices.Div64(uint64(len(contracts)))
+	}
+	WriteJSON(w, rc)
 }
 
 // renterDownloadsHandler handles the API call to request the download queue.

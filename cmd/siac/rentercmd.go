@@ -356,6 +356,21 @@ func rentercontractscmd() {
 		fmt.Println("No contracts have been formed.")
 		return
 	}
+	fmt.Println(len(rc.Contracts), "active contracts")
+	fmt.Println("  Average storage price (TB / Mo):", currencyUnits(rc.AvgStoragePrice.Mul(modules.BlockBytesPerMonthTerabyte)))
+	fmt.Println("  Average upload bandwidth price (1 TB):", currencyUnits(rc.AvgULPrice.Mul(modules.BytesPerTerabyte)))
+	fmt.Println("  Average download bandwidth price (1 TB):", currencyUnits(rc.AvgDLPrice.Mul(modules.BytesPerTerabyte)))
+	fmt.Print("  Countries hosts are located in: ")
+	for i := 0; i < len(rc.Countries); i++ {
+		if i < len(rc.Countries) - 1 {
+			fmt.Print(rc.Countries[i] + ", ")
+		} else {
+			fmt.Print(rc.Countries[i])
+		}
+	}
+	fmt.Println()
+	fmt.Println()
+
 	sort.Sort(byValue(rc.Contracts))
 	fmt.Println("Contracts:")
 	w := tabwriter.NewWriter(os.Stdout, 2, 0, 2, ' ', 0)
