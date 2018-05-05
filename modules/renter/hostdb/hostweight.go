@@ -54,6 +54,26 @@ var (
 	tbMonth = uint64(4032) * uint64(1e12)
 )
 
+// blacklistHost returns false if the provided host's country is accepted by the provided
+// hostdb profile or no location is specified in the hostdb profile, otherwise true.
+func (hdb *HostDB) blacklistHost(entry modules.HostDBEntry, hostdbprofile string) bool {
+	// Accept hosts from all locations if no location is specified in hostdb profile.
+	hdbp := hdb.HostDBProfile(hostdbprofile)
+	if len(hdbp.Location) < 1 {
+		return false
+	}
+	// Check if host's location is among the locations specified in the hostdb profile.
+	for _, l := range hdbp.Location {
+		if l == "eu" && entry.EUhost {
+			return false
+		}
+		if l == entry.Country {
+			return false
+		}
+	}
+	return true
+}
+
 // collateralAdjustments improves the host's weight according to the amount of
 // collateral that they have provided.
 func (hdb *HostDB) collateralAdjustments(entry modules.HostDBEntry) float64 {
@@ -131,7 +151,7 @@ func (hdb *HostDB) interactionAdjustments(entry modules.HostDBEntry) float64 {
 }
 
 // priceAdjustments will adjust the weight of the entry according to the prices
-// that it has set.
+// that it has set and the storage tier defined in the hostdb profile.
 func (hdb *HostDB) priceAdjustments(entry modules.HostDBEntry, hostdbprofile string) float64 {
 	// Sanity checks - the constants values need to have certain relationships
 	// to eachother
@@ -381,9 +401,10 @@ func (hdb *HostDB) uptimeAdjustments(entry modules.HostDBEntry) float64 {
 	return math.Pow(uptimeRatio, exp)
 }
 
-// calculateHostWeight returns the weight of a host according to the settings of
-// the host database entry.
-func (hdb *HostDB) calculateHostWeight(entry modules.HostDBEntry, hostdbprofile string) types.Currency {
+// calculateHostWeight returns the weight of a host as well as a boolean
+// indicating whether that host should be blacklisted according to the settings
+// of the host database entry and the settings set in the hostdb profile.
+func (hdb *HostDB) calculateHostWeight(entry modules.HostDBEntry, hostdbprofile string) (weight types.Currency, blacklist bool) {
 	collateralReward := hdb.collateralAdjustments(entry)
 	interactionPenalty := hdb.interactionAdjustments(entry)
 	lifetimePenalty := hdb.lifetimeAdjustments(entry)
@@ -397,12 +418,16 @@ func (hdb *HostDB) calculateHostWeight(entry modules.HostDBEntry, hostdbprofile 
 		pricePenalty * storageRemainingPenalty * uptimePenalty * versionPenalty
 
 	// Return a types.Currency.
-	weight := baseWeight.MulFloat(fullPenalty)
+	weight = baseWeight.MulFloat(fullPenalty)
 	if weight.IsZero() {
-		// A weight of zero is problematic for for the host tree.
-		return types.NewCurrency64(1)
+		// A weight of zero is problematic for the host tree.
+		weight = types.NewCurrency64(1)
 	}
-	return weight
+
+	// Blacklist host if location is not among the specified ones in the hostdb profile.
+	blacklist = hdb.blacklistHost(entry, hostdbprofile)
+
+	return
 }
 
 // calculateConversionRate calculates the conversion rate of the provided
@@ -411,8 +436,10 @@ func (hdb *HostDB) calculateHostWeight(entry modules.HostDBEntry, hostdbprofile 
 func (hdb *HostDB) calculateConversionRate(score types.Currency) float64 {
 	var totalScore types.Currency
 	//TODO pachisi456: add support for multiple trees
+	//TODO pachisi456: exclude blacklisted hosts?
 	for _, h := range hdb.ActiveHosts("default") {
-		totalScore = totalScore.Add(hdb.calculateHostWeight(h, "default"))
+		score, _ := hdb.calculateHostWeight(h, "default")
+		totalScore = totalScore.Add(score)
 	}
 	if totalScore.IsZero() {
 		totalScore = types.NewCurrency64(1)
@@ -463,8 +490,7 @@ func (hdb *HostDB) ScoreBreakdown(entry modules.HostDBEntry, hostdbprofile strin
 	hdb.mu.Lock()
 	defer hdb.mu.Unlock()
 
-	// TODO pachisi456: add support for multiple trees
-	score := hdb.calculateHostWeight(entry, "default")
+	score, _ := hdb.calculateHostWeight(entry, hostdbprofile)
 	return modules.HostScoreBreakdown{
 		Score:          score,
 		ConversionRate: hdb.calculateConversionRate(score),

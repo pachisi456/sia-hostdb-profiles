@@ -40,7 +40,7 @@ var (
 
 type (
 	// WeightFunc is a function used to weight a given HostDBEntry in the tree.
-	WeightFunc func(modules.HostDBEntry, string) types.Currency
+	WeightFunc func(modules.HostDBEntry, string) (types.Currency, bool)
 
 	// HostTree is used to store and select host database entries. Each HostTree
 	// is initialized with a weighting func that is able to assign a weight to
@@ -58,6 +58,10 @@ type (
 
 		// weightFn calculates the weight of a hostEntry
 		weightFn WeightFunc
+
+		// blacklist cointains public keys of all hosts that are in other
+		// locations than specified in the hostdb profile.
+		blacklist []types.SiaPublicKey
 
 		mu sync.Mutex
 	}
@@ -213,9 +217,10 @@ func (ht *HostTree) All() []modules.HostDBEntry {
 // Insert inserts the entry provided to `entry` into the host tree. Insert will
 // return an error if the input host already exists.
 func (ht *HostTree) Insert(hdbe modules.HostDBEntry) error {
+	score, blacklist := ht.weightFn(hdbe, ht.name)
 	entry := &hostEntry{
 		HostDBEntry: hdbe,
-		weight:      ht.weightFn(hdbe, ht.name),
+		weight:      score,
 	}
 
 	if _, exists := ht.hosts[string(entry.PublicKey.Key)]; exists {
@@ -223,6 +228,10 @@ func (ht *HostTree) Insert(hdbe modules.HostDBEntry) error {
 	}
 
 	_, node := ht.root.recursiveInsert(entry)
+
+	if blacklist {
+		ht.insertIntoBlacklist(entry.PublicKey)
+	}
 
 	ht.hosts[string(entry.PublicKey.Key)] = node
 	return nil
@@ -236,8 +245,40 @@ func (ht *HostTree) Remove(pk types.SiaPublicKey) error {
 	}
 	node.remove()
 	delete(ht.hosts, string(pk.Key))
+	ht.removeFromBlacklist(pk)
 
 	return nil
+}
+
+// insertIntoBlacklist checks whether the host with the provided public key is
+// in the blacklist and inserts it if it is not the case.
+func (ht *HostTree) insertIntoBlacklist(spk types.SiaPublicKey) {
+	// Check if host is already in blacklist.
+	for _, v := range ht.blacklist {
+		if string(v.Key) == string(spk.Key) {
+			// Host is already in blacklist.
+			return
+		}
+	}
+	// Insert the host into the blacklist.
+	ht.blacklist = append(ht.blacklist, spk)
+}
+
+// removeFromBlacklist checks whether the host with the provided public key is
+// in the blacklist and removes it if it is the case.
+func (ht *HostTree) removeFromBlacklist(spk types.SiaPublicKey) {
+	// Find host in blacklist (if existent).
+	index := -1
+	for i, v := range ht.blacklist {
+		if string(v.Key) == string(spk.Key) {
+			index = i
+			break
+		}
+	}
+	// Remove the host from blacklist (if existent).
+	if index >= 0 {
+		ht.blacklist = append(ht.blacklist[:index], ht.blacklist[index+1:]...)
+	}
 }
 
 // Modify updates a host entry at the given public key, replacing the old entry
@@ -248,14 +289,22 @@ func (ht *HostTree) Modify(hdbe modules.HostDBEntry) error {
 		return errNoSuchHost
 	}
 
+	score, blacklist := ht.weightFn(hdbe, ht.name)
+
 	node.remove()
 
 	entry := &hostEntry{
 		HostDBEntry: hdbe,
-		weight:      ht.weightFn(hdbe, ht.name),
+		weight:      score,
 	}
 
 	_, node = ht.root.recursiveInsert(entry)
+
+	if blacklist {
+		ht.insertIntoBlacklist(entry.PublicKey)
+	} else {
+		ht.removeFromBlacklist(entry.PublicKey)
+	}
 
 	ht.hosts[string(entry.PublicKey.Key)] = node
 	return nil
@@ -277,6 +326,9 @@ func (ht *HostTree) Select(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 func (ht *HostTree) SelectRandom(n int, ignore []types.SiaPublicKey) []modules.HostDBEntry {
 	var hosts []modules.HostDBEntry
 	var removedEntries []*hostEntry
+
+	// Merge ignore with the host tree's blacklist.
+	ignore = append(ignore, ht.blacklist...)
 
 	for _, pubkey := range ignore {
 		node, exists := ht.hosts[string(pubkey.Key)]

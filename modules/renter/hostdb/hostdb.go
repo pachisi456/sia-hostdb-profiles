@@ -270,6 +270,11 @@ func (hdb *HostDB) HostDBProfiles() (hdbp map[string]*hostdbprofile.HostDBProfil
 	return hdb.hostdbProfiles.HostDBProfiles()
 }
 
+// HostDBProfile returns the hostdb profile with the given name.
+func (hdb *HostDB) HostDBProfile(name string) hostdbprofile.HostDBProfile {
+	return hdb.hostdbProfiles.GetProfile(name)
+}
+
 // ConfigHostDBProfiles updates the provided setting of the hostdb profile with the provided
 // name to the provided value.
 func (hdb *HostDB) ConfigHostDBProfile(name, setting, value string) (err error) {

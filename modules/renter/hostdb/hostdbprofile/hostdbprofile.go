@@ -11,6 +11,7 @@ var (
 	// locations is the list of possible locations the user can restrict their hostdb
 	// profile to. Siad will then only form contracts with hosts in those locations
 	// (according to ip address)
+	//TODO pachisi456: complete this list (should contain all countries of the world)
 	locations = []string{"germany", "austria", "switzerland"}
 )
 

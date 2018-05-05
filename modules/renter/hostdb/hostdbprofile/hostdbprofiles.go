@@ -105,7 +105,7 @@ func storagetierValid(storagetier string) (valid bool) {
 	return
 }
 
-// locationValid is helper function that returns true if the provided location is valid,
+// locationValid is helper a function that returns true if the provided location is valid,
 // otherwise false.
 func locationValid(location string) (valid bool) {
 	for _, v := range locations {

@@ -6,6 +6,7 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/node/api"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
 	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
+	"strings"
 )
 
 // HostDbActiveGet requests the /hostdb/active endpoint's resources.
@@ -36,8 +37,8 @@ func (c *Client) HostDbProfilesGet() (hdbp map[string]*hostdbprofile.HostDBProfi
 // API route /hostdb/profiles/add
 func (c *Client) HostDbProfilesAddPost(name, storagetier string) (err error) {
 	values := url.Values{}
-	values.Set("name", name)
-	values.Set("storagetier", storagetier)
+	values.Set("name", strings.ToLower(name))
+	values.Set("storagetier", strings.ToLower(storagetier))
 	err = c.post("/hostdb/profiles/add", values.Encode(), nil)
 	return
 }
@@ -46,9 +47,9 @@ func (c *Client) HostDbProfilesAddPost(name, storagetier string) (err error) {
 // /hostdb/profiles/config
 func (c *Client) HostDbProfilesConfigPost(name, setting, value string) (err error) {
 	values := url.Values{}
-	values.Set("name", name)
-	values.Set("setting", setting)
-	values.Set("value", value)
+	values.Set("name", strings.ToLower(name))
+	values.Set("setting", strings.ToLower(setting))
+	values.Set("value", strings.ToLower(value))
 	err = c.post("/hostdb/profiles/config", values.Encode(), nil)
 	return
 }
