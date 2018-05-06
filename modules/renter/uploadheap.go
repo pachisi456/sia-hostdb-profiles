@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/pachisi456/sia-hostdb-profiles/crypto"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
 )
 
 // uploadHeap contains a priority-sorted heap of all the chunks being uploaded
@@ -167,6 +168,10 @@ func (r *Renter) buildUnfinishedChunks(f *file, hosts map[string]struct{}) []*un
 	for fcid, fileContract := range f.contracts {
 		recentContract, exists := r.hostContractor.ContractByID(fcid)
 		contractUtility, exists2 := r.hostContractor.ContractUtility(fcid)
+		if exists != exists2 {
+			build.Critical("got a contract without utility or vice versa which shouldn't happen",
+				exists, exists2)
+		}
 		if !exists || !exists2 {
 			// File contract does not seem to be part of the host anymore.
 			// Delete this contract and mark the file to be saved.

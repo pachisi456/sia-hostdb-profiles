@@ -38,6 +38,7 @@ type (
 		Drop()
 		FundSiacoins(types.Currency) error
 		Sign(bool) ([]types.Transaction, error)
+		UnconfirmedParents() ([]types.Transaction, error)
 		View() (types.Transaction, []types.Transaction)
 		ViewAdded() (parents, coins, funds, signatures []int)
 	}
@@ -52,7 +53,7 @@ type (
 		Host(types.SiaPublicKey) (modules.HostDBEntry, bool)
 		IncrementSuccessfulInteractions(key types.SiaPublicKey)
 		IncrementFailedInteractions(key types.SiaPublicKey)
-		RandomHosts(tree string, n int, exclude []types.SiaPublicKey) []modules.HostDBEntry
+		RandomHosts(tree string, n int, exclude []types.SiaPublicKey) ([]modules.HostDBEntry, error)
 		ScoreBreakdown(modules.HostDBEntry, string) modules.HostScoreBreakdown
 	}
 
