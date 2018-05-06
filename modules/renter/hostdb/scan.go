@@ -417,7 +417,8 @@ func (hdb *HostDB) threadedScan() {
 	// The initial scan might have been interrupted. Queue one scan for every
 	// announced host that was missed by the initial scan and wait for the
 	// scans to finish before starting the scan loop.
-	allHosts := hdb.hostTree.All()
+	//TODO pachisi456: add support for multiple trees
+	allHosts := hdb.hostTrees.All("default")
 	hdb.mu.Lock()
 	for _, host := range allHosts {
 		if len(host.ScanHistory) == 0 && host.HistoricUptime == 0 && host.HistoricDowntime == 0 {

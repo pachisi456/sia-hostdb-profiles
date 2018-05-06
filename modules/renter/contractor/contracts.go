@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/pachisi456/sia-hostdb-profiles/build"
 	"github.com/pachisi456/sia-hostdb-profiles/modules"

@@ -9,6 +9,7 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/proto"
 	"github.com/pachisi456/sia-hostdb-profiles/persist"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"github.com/NebulousLabs/errors"
 )
 
 // contractorPersist defines what Contractor data persists across sessions.

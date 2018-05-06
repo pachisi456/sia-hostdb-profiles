@@ -11,6 +11,7 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
 	"github.com/NebulousLabs/writeaheadlog"
+	"github.com/NebulousLabs/errors"
 )
 
 const (
