@@ -141,6 +141,5 @@ func convertPersist(dir string) error {
 	}
 
 	// delete the journal file
-	os.RemoveAll(journalPath)
-	return nil
+	return errors.AddContext(os.Remove(journalPath), "failed to remove journal file")
 }

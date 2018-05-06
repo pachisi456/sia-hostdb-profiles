@@ -75,7 +75,7 @@ type hostDB interface {
 	// RandomHosts returns a set of random hosts, weighted by their estimated
 	// usefulness / attractiveness to the renter. RandomHosts will not return
 	// any offline or inactive hosts.
-	RandomHosts(int, []types.SiaPublicKey) []modules.HostDBEntry
+	RandomHosts(int, []types.SiaPublicKey) ([]modules.HostDBEntry, error)
 
 	// ScoreBreakdown returns a detailed explanation of the various properties
 	// of the host.
@@ -189,7 +189,7 @@ type Renter struct {
 	lastEstimation modules.RenterPriceEstimation
 
 	// Utilities.
-	chunkCache     map[string][]byte
+	chunkCache     map[string]*cacheData
 	cmu            *sync.Mutex
 	cs             modules.ConsensusSet
 	deps           modules.Dependencies
@@ -224,7 +224,10 @@ func (r *Renter) PriceEstimation() modules.RenterPriceEstimation {
 	}
 
 	// Grab hosts to perform the estimation.
-	hosts := r.hostDB.RandomHosts(priceEstimationScope, nil)
+	hosts, err := r.hostDB.RandomHosts(priceEstimationScope, nil)
+	if err != nil {
+		return modules.RenterPriceEstimation{}
+	}
 
 	// Check if there are zero hosts, which means no estimation can be made.
 	if len(hosts) == 0 {
@@ -360,10 +363,10 @@ func validateSiapath(siapath string) error {
 		return ErrEmptyFilename
 	}
 	if siapath == ".." {
-		return errors.New("siapath cannot be ..")
+		return errors.New("siapath cannot be '..'")
 	}
 	if siapath == "." {
-		return errors.New("siapath cannot be .")
+		return errors.New("siapath cannot be '.'")
 	}
 	// check prefix
 	if strings.HasPrefix(siapath, "/") {
@@ -423,7 +426,7 @@ func NewCustomRenter(g modules.Gateway, cs modules.ConsensusSet, tpool modules.T
 
 		workerPool: make(map[types.FileContractID]*worker),
 
-		chunkCache:     make(map[string][]byte),
+		chunkCache:     make(map[string]*cacheData),
 		cmu:            new(sync.Mutex),
 		cs:             cs,
 		deps:           deps,
