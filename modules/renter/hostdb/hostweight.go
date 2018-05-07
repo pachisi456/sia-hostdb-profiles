@@ -185,18 +185,18 @@ func (hdb *HostDB) priceAdjustments(entry modules.HostDBEntry, hostdbprofile str
 	adjustedDownloadPrice := entry.DownloadBandwidthPrice.Div64(12096).Div64(3) // Adjust download price to match one download over 12 weeks, 1 redundancy.
 	siafundFee := adjustedContractPrice.Add(adjustedUploadPrice).Add(adjustedDownloadPrice).Add(entry.Collateral).MulTax()
 
-	// weigh prices, depending on the storage tier
+	// Weigh prices, depending on the storage tier.
 	hdbp := hdb.hostdbProfiles.GetProfile(hostdbprofile)
 	switch hdbp.Storagetier {
 	case "cold":
-		// prefer hosts with cheap storage
-		adjustedContractPrice = adjustedContractPrice.Mul64(2)
+		// Prefer hosts with cheap storage.
+		adjustedContractPrice = adjustedContractPrice.Mul64(5)
 	case "warm":
-		// prices are equally weighed, so nothing needs to be done here
+		// Weigh prices equally.
 	case "hot":
-		// prefer hosts with cheap bandwidth
-		adjustedUploadPrice = adjustedUploadPrice.Mul64(2)
-		adjustedDownloadPrice = adjustedDownloadPrice.Mul64(2)
+		// Prefer hosts with cheap bandwidth.
+		adjustedUploadPrice = adjustedUploadPrice.Mul64(5)
+		adjustedDownloadPrice = adjustedDownloadPrice.Mul64(5)
 	}
 
 	totalPrice := entry.StoragePrice.Add(adjustedContractPrice).Add(adjustedUploadPrice).Add(adjustedDownloadPrice).Add(siafundFee)
