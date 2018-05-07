@@ -116,6 +116,14 @@ func (c *Contractor) managedMarkContractsUtility() error {
 				u.GoodForRenew = false
 				return
 			}
+			// Contract has no utility if the host is located outside of the locations specified
+			// in the renter's hostdb profile.
+			//TODO pachisi456: add support for multiple profiles / trees
+			if c.hdb.ScoreBreakdown(host, "default").Blacklisted {
+				u.GoodForUpload = false
+				u.GoodForRenew = false
+				return
+			}
 			// Contract has no utility if the host is offline.
 			if isOffline(host) {
 				u.GoodForUpload = false

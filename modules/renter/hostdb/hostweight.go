@@ -492,10 +492,11 @@ func (hdb *HostDB) ScoreBreakdown(entry modules.HostDBEntry, hostdbprofile strin
 	hdb.mu.Lock()
 	defer hdb.mu.Unlock()
 
-	score, _ := hdb.calculateHostWeight(entry, hostdbprofile)
+	score, blacklist := hdb.calculateHostWeight(entry, hostdbprofile)
 	return modules.HostScoreBreakdown{
 		Score:          score,
 		ConversionRate: hdb.calculateConversionRate(score),
+		Blacklisted:    blacklist,
 
 		AgeAdjustment:              hdb.lifetimeAdjustments(entry),
 		BurnAdjustment:             1,

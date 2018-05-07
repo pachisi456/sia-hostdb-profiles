@@ -139,6 +139,7 @@ type HostDBScan struct {
 type HostScoreBreakdown struct {
 	Score          types.Currency `json:"score"`
 	ConversionRate float64        `json:"conversionrate"`
+	Blacklisted    bool           `json:"blacklisted"`
 
 	AgeAdjustment              float64 `json:"ageadjustment"`
 	BurnAdjustment             float64 `json:"burnadjustment"`
