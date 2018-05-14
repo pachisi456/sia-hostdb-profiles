@@ -19,6 +19,10 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/types"
 	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
 	"github.com/oschwald/geoip2-golang"
+	"net/http"
+	"io"
+	"compress/gzip"
+	"archive/tar"
 )
 
 var (
@@ -28,6 +32,11 @@ var (
 	errNilCS                 = errors.New("cannot create hostdb with nil consensus set")
 	errNilGateway            = errors.New("cannot create hostdb with nil gateway")
 )
+
+// Directory and file for ip information database.
+//TODO pachisi456: use more straight forward naming
+const geolocationDir = "GeoLite2-Country_20180501"
+const geolocationFile = "GeoLite2-Country.mmdb"
 
 // The HostDB is a database of potential hosts. It assigns a weight to each
 // host based on their hosting parameters, and then can select hosts at random
@@ -122,10 +131,24 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 	})
 
 	// Load the ip information database to determine host location (country).
-	db, err := geoip2.Open(filepath.Join(persistDir, "/GeoLite2/GeoLite2-Country_20180501/GeoLite2-Country.mmdb"))
+	db, err := geoip2.Open(filepath.Join(persistDir, geolocationDir, geolocationFile))
 	if err != nil {
-		//TODO pachisi456: download database (rename above to enable for universal maxminddb)
-		fmt.Println("Could not load ip information database")
+		// Get the geolocation database.
+		resp, err := http.Get("http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz")
+		if err != nil {
+			hdb.log.Print(err)
+		}
+		// Untar the database.
+		r := io.Reader(resp.Body)
+		err = Untar(persistDir, r)
+		if err != nil {
+			hdb.log.Print(err)
+		}
+		err = nil
+		db, err = geoip2.Open(filepath.Join(persistDir, geolocationDir, geolocationFile))
+		if err != nil {
+			hdb.log.Print(err)
+		}
 	}
 	hdb.ipdb = db
 
@@ -354,4 +377,69 @@ func (hdb *HostDB) RandomHosts(tree string, n int, excludeKeys []types.SiaPublic
 		return []modules.HostDBEntry{}, ErrInitialScanIncomplete
 	}
 	return hdb.hostTrees.SelectRandom(tree, n, excludeKeys), nil
+}
+
+
+// Untar takes a destination path and a reader; a tar reader loops over the tarfile
+// creating the file structure at 'dst' along the way, and writing any files
+func Untar(dst string, r io.Reader) error {
+
+	gzr, err := gzip.NewReader(r)
+	defer gzr.Close()
+	if err != nil {
+		return err
+	}
+
+	tr := tar.NewReader(gzr)
+
+	for {
+		header, err := tr.Next()
+
+		switch {
+
+		// if no more files are found return
+		case err == io.EOF:
+			return nil
+
+			// return any other error
+		case err != nil:
+			return err
+
+			// if the header is nil, just skip it (not sure how this happens)
+		case header == nil:
+			continue
+		}
+
+		// the target location where the dir/file should be created
+		target := filepath.Join(dst, header.Name)
+
+		// the following switch could also be done using fi.Mode(), not sure if there
+		// a benefit of using one vs. the other.
+		// fi := header.FileInfo()
+
+		// check the file type
+		switch header.Typeflag {
+
+		// if its a dir and it doesn't exist create it
+		case tar.TypeDir:
+			if _, err := os.Stat(target); err != nil {
+				if err := os.MkdirAll(target, 0755); err != nil {
+					return err
+				}
+			}
+
+			// if it's a file create it
+		case tar.TypeReg:
+			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			// copy over contents
+			if _, err := io.Copy(f, tr); err != nil {
+				return err
+			}
+		}
+	}
 }
