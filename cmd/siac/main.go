@@ -102,6 +102,7 @@ func main() {
 
 	hostdbProfilesCmd.AddCommand(hostdbProfilesAddCmd)
 	hostdbProfilesCmd.AddCommand(hostdbProfilesConfigCmd)
+	hostdbProfilesCmd.AddCommand(hostdbProfilesDeleteCmd)
 
 	root.AddCommand(minerCmd)
 	minerCmd.AddCommand(minerStartCmd, minerStopCmd)

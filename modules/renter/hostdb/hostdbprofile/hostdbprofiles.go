@@ -62,7 +62,7 @@ func (hdbp *HostDBProfiles) AddHostDBProfile(name, storagetier string) (err erro
 
 // ConfigHostDBProfiles updates the provided setting of the hostdb profile with the provided
 // name to the provided value.
-func (hdbp *HostDBProfiles) ConfigHostDBProfiles(name, setting, value string) (err error) {
+func (hdbp *HostDBProfiles) ConfigHostDBProfiles(name, setting, value string) error {
 	hdbp.mu.Lock()
 	defer hdbp.mu.Unlock()
 
@@ -72,6 +72,20 @@ func (hdbp *HostDBProfiles) ConfigHostDBProfiles(name, setting, value string) (e
 	}
 
 	return hdbp.profiles[name].configHostDBProfile(setting, value)
+}
+
+// DeleteHostDBProfile deletes the hostdb profile with the provided name.
+func (hdbp *HostDBProfiles) DeleteHostDBProfile(name string) error {
+	hdbp.mu.Lock()
+	defer hdbp.mu.Unlock()
+
+	// check if profile exists
+	if _, exists := hdbp.profiles[name]; !exists {
+		return errNoSuchHostdbProfile
+	}
+
+	delete(hdbp.profiles, name)
+	return nil
 }
 
 // getProfile returns the hostdb profile with the given name.

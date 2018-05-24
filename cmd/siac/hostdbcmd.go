@@ -80,6 +80,13 @@ at all siad will pick hosts from all over the world.
 `,
 		Run: wrap(hostdbprofilesconfigcmd),
 	}
+
+	hostdbProfilesDeleteCmd = &cobra.Command{
+		Use:   "delete [name]",
+		Short: "Delete a hostdb profile.",
+		Long:  "Delete the hostdb profile with the provided [name].",
+		Run:   wrap(hostdbprofilesdeletecmd),
+	}
 )
 
 // printScoreBreakdown prints the score breakdown of a host, provided the info.
@@ -407,4 +414,12 @@ func hostdbprofilesconfigcmd(name, setting, value string) {
 		die("Could not edit hostdb profile:", err)
 	}
 	fmt.Println("Profile \"" + name + "\" has been edited successfully.")
+}
+
+func hostdbprofilesdeletecmd(name string) {
+	err := httpClient.HostDbProfilesDeletePost(name)
+	if err != nil {
+		die("Could not delete hostdb profile:", err)
+	}
+	fmt.Println("Profile \"" + name + "\" has been deleted successfully.")
 }

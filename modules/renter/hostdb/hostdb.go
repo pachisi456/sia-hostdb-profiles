@@ -310,13 +310,28 @@ func (hdb *HostDB) HostDBProfile(name string) hostdbprofile.HostDBProfile {
 // ConfigHostDBProfiles updates the provided setting of the hostdb profile with the provided
 // name to the provided value.
 func (hdb *HostDB) ConfigHostDBProfile(name, setting, value string) (err error) {
-	// change setting
+	// Change setting.
 	err = hdb.hostdbProfiles.ConfigHostDBProfiles(name, setting, value)
 	if err != nil {
-		return err
+		return
 	}
 
-	// save to persist data
+	// Save to persistence data.
+	hdb.mu.Lock()
+	hdb.saveSync()
+	hdb.mu.Unlock()
+	return
+}
+
+// DeleteHostDBProfile deletes the hostdb profile with the provided name.
+func (hdb *HostDB) DeleteHostDBProfile(name string) (err error) {
+	// Delete hostdb profile.
+	err = hdb.hostdbProfiles.DeleteHostDBProfile(name)
+	if err != nil {
+		return
+	}
+
+	// Save to persistence data.
 	hdb.mu.Lock()
 	hdb.saveSync()
 	hdb.mu.Unlock()
@@ -379,7 +394,6 @@ func (hdb *HostDB) RandomHosts(tree string, n int, excludeKeys []types.SiaPublic
 	}
 	return hdb.hostTrees.SelectRandom(tree, n, excludeKeys), nil
 }
-
 
 // UntarGeoLite2 untars the GeoLite2 database downloaded from MaxMind and saves it
 // to the geolocationDir.

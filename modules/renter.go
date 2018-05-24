@@ -325,6 +325,9 @@ type Renter interface {
 	// DeleteFile deletes a file entry from the renter.
 	DeleteFile(path string) error
 
+	// DeleteHostDBProfile deletes the hostdb profile with the provided name.
+	DeleteHostDBProfile(name string) error
+
 	// Download performs a download according to the parameters passed, including
 	// downloads of `offset` and `length` type.
 	Download(params RenterDownloadParameters) error

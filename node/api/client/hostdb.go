@@ -53,3 +53,12 @@ func (c *Client) HostDbProfilesConfigPost(name, setting, value string) (err erro
 	err = c.post("/hostdb/profiles/config", values.Encode(), nil)
 	return
 }
+
+// HostDbProfilesDeletePost makes a post request to delete the hostdb profile with
+// the provided name.
+func (c *Client) HostDbProfilesDeletePost(name string) (err error) {
+	values := url.Values{}
+	values.Set("name", strings.ToLower(name))
+	err = c.post("/hostdb/profiles/delete", values.Encode(), nil)
+	return
+}

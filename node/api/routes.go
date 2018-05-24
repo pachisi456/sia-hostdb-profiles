@@ -95,6 +95,7 @@ func (api *API) buildHTTPRoutes(requiredUserAgent string, requiredPassword strin
 		router.GET("/hostdb/profiles", api.hostDBProfilesHandlerGET)
 		router.POST("/hostdb/profiles/add", api.hostDBProfilesAddHandler)
 		router.POST("/hostdb/profiles/config", api.hostDBProfilesConfigHandler)
+		router.POST("/hostdb/profiles/delete", api.hostDBProfilesDeleteHandler)
 	}
 
 	// Transaction pool API Calls

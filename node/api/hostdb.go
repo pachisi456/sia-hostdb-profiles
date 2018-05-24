@@ -146,3 +146,14 @@ func (api *API) hostDBProfilesConfigHandler(w http.ResponseWriter, req *http.Req
 	}
 	WriteSuccess(w)
 }
+
+// hostDBProfilesDeleteHandler handles the API call to delete a hostdb profile.
+func (api *API) hostDBProfilesDeleteHandler(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	name := req.FormValue("name")
+	err := api.renter.DeleteHostDBProfile(name)
+	if err != nil {
+		WriteError(w, Error{err.Error()}, http.StatusBadRequest)
+		return
+	}
+	WriteSuccess(w)
+}

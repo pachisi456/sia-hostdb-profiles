@@ -77,6 +77,9 @@ type hostDB interface {
 	// provided name to the provided value. All parameters are checked for validity.
 	ConfigHostDBProfile(name, setting, value string) (err error)
 
+	// DeleteHostDBProfile deletes the hostdb profile with the provided name.
+	DeleteHostDBProfile(name string) error
+
 	// Host returns the HostDBEntry for a given host.
 	Host(types.SiaPublicKey) (modules.HostDBEntry, bool)
 
@@ -341,6 +344,11 @@ func (r *Renter) HostDBProfiles() map[string]*hostdbprofile.HostDBProfile { retu
 // provided name to the provided value. All parameters are checked for validity.
 func (r *Renter) ConfigHostDBProfiles(name, setting, value string) (err error) {
 	return r.hostDB.ConfigHostDBProfile(name, setting, value)
+}
+
+// DeleteHostDBProfile deletes the hostdb profile with the provided name.
+func (r *Renter) DeleteHostDBProfile(name string) error {
+	return r.hostDB.DeleteHostDBProfile(name)
 }
 
 // ScoreBreakdown returns the score breakdown
