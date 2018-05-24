@@ -23,6 +23,7 @@ import (
 	"io"
 	"compress/gzip"
 	"archive/tar"
+	"strings"
 )
 
 var (
@@ -35,8 +36,8 @@ var (
 
 // Directory and file for ip information database.
 //TODO pachisi456: use more straight forward naming
-const geolocationDir = "GeoLite2-Country_20180501"
-const geolocationFile = "GeoLite2-Country.mmdb"
+const geolocationDir = "geolocation"
+const geolocationFile = "ip-database.mmdb"
 
 // The HostDB is a database of potential hosts. It assigns a weight to each
 // host based on their hosting parameters, and then can select hosts at random
@@ -140,7 +141,7 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 		}
 		// Untar the database.
 		r := io.Reader(resp.Body)
-		err = Untar(persistDir, r)
+		err = UntarGeoLite2(persistDir, r)
 		if err != nil {
 			hdb.log.Print(err)
 		}
@@ -380,9 +381,9 @@ func (hdb *HostDB) RandomHosts(tree string, n int, excludeKeys []types.SiaPublic
 }
 
 
-// Untar takes a destination path and a reader; a tar reader loops over the tarfile
-// creating the file structure at 'dst' along the way, and writing any files
-func Untar(dst string, r io.Reader) error {
+// UntarGeoLite2 untars the GeoLite2 database downloaded from MaxMind and saves it
+// to the geolocationDir.
+func UntarGeoLite2(dst string, r io.Reader) error {
 
 	gzr, err := gzip.NewReader(r)
 	defer gzr.Close()
@@ -411,7 +412,19 @@ func Untar(dst string, r io.Reader) error {
 		}
 
 		// the target location where the dir/file should be created
-		target := filepath.Join(dst, header.Name)
+		var target string
+		switch {
+		case strings.HasSuffix(header.Name, "/"):
+			// Geolocation directory.
+			target = filepath.Join(dst, geolocationDir)
+		case strings.HasSuffix(header.Name, ".txt"):
+			// Copyright and license file.
+			filename := strings.Split(header.Name, "/")
+			target = filepath.Join(dst, geolocationDir, filename[1])
+		case strings.HasSuffix(header.Name, ".mmdb"):
+			// Actual GeoLite2 database.
+			target = filepath.Join(dst, geolocationDir, geolocationFile)
+		}
 
 		// the following switch could also be done using fi.Mode(), not sure if there
 		// a benefit of using one vs. the other.
