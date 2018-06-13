@@ -328,7 +328,9 @@ func (ht *HostTree) SelectRandom(n int, ignore []types.SiaPublicKey) []modules.H
 	var removedEntries []*hostEntry
 
 	// Merge ignore with the host tree's blacklist.
-	ignore = append(ignore, ht.blacklist...)
+	if ht.blacklist != nil {
+		ignore = append(ignore, ht.blacklist...)
+	}
 
 	for _, pubkey := range ignore {
 		node, exists := ht.hosts[string(pubkey.Key)]

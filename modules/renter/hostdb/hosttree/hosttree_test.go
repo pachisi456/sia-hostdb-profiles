@@ -89,9 +89,9 @@ func makeHostDBEntry() modules.HostDBEntry {
 }
 
 func TestHostTree(t *testing.T) {
-	tree := NewHostTree(func(hdbe modules.HostDBEntry) types.Currency {
-		return types.NewCurrency64(20)
-	})
+	tree := NewHostTree(func(hdbe modules.HostDBEntry, tree string) (types.Currency, bool) {
+		return types.NewCurrency64(20), false
+	}, "default")
 
 	// Create a bunch of host entries of equal weight.
 	firstInsertions := 64
@@ -145,9 +145,9 @@ func TestHostTreeParallel(t *testing.T) {
 		t.SkipNow()
 	}
 
-	tree := NewHostTree(func(dbe modules.HostDBEntry) types.Currency {
-		return types.NewCurrency64(10)
-	})
+	tree := NewHostTree(func(dbe modules.HostDBEntry, tree string) (types.Currency, bool) {
+		return types.NewCurrency64(10), false
+	}, "default")
 
 	// spin up 100 goroutines all randomly inserting, removing, modifying, and
 	// fetching nodes from the tree.
@@ -243,9 +243,9 @@ func TestHostTreeParallel(t *testing.T) {
 }
 
 func TestHostTreeModify(t *testing.T) {
-	tree := NewHostTree(func(dbe modules.HostDBEntry) types.Currency {
-		return types.NewCurrency64(10)
-	})
+	tree := NewHostTree(func(dbe modules.HostDBEntry, tree string) (types.Currency, bool) {
+		return types.NewCurrency64(10), true
+	}, "default")
 
 	treeSize := 100
 	var keys []types.SiaPublicKey
@@ -293,9 +293,9 @@ func TestVariedWeights(t *testing.T) {
 	// will be tallied up as hosts are created.
 	i := 0
 
-	tree := NewHostTree(func(dbe modules.HostDBEntry) types.Currency {
-		return types.NewCurrency64(uint64(i))
-	})
+	tree := NewHostTree(func(dbe modules.HostDBEntry, tree string) (types.Currency, bool) {
+		return types.NewCurrency64(uint64(i)), false
+	}, "default")
 
 	hostCount := 5
 	expectedPerWeight := int(10e3)
@@ -345,9 +345,9 @@ func TestRepeatInsert(t *testing.T) {
 		t.SkipNow()
 	}
 
-	tree := NewHostTree(func(dbe modules.HostDBEntry) types.Currency {
-		return types.NewCurrency64(10)
-	})
+	tree := NewHostTree(func(dbe modules.HostDBEntry, tree string) (types.Currency, bool) {
+		return types.NewCurrency64(10), false
+	}, "default")
 
 	entry1 := makeHostDBEntry()
 	entry2 := entry1
@@ -363,9 +363,9 @@ func TestRepeatInsert(t *testing.T) {
 func TestNodeAtWeight(t *testing.T) {
 	weight := types.NewCurrency64(10)
 	// create hostTree
-	tree := NewHostTree(func(dbe modules.HostDBEntry) types.Currency {
-		return weight
-	})
+	tree := NewHostTree(func(dbe modules.HostDBEntry, tree string) (types.Currency, bool) {
+		return weight, false
+	}, "default")
 
 	entry := makeHostDBEntry()
 	err := tree.Insert(entry)
@@ -383,10 +383,10 @@ func TestNodeAtWeight(t *testing.T) {
 func TestRandomHosts(t *testing.T) {
 	calls := 0
 	// Create the tree.
-	tree := NewHostTree(func(dbe modules.HostDBEntry) types.Currency {
+	tree := NewHostTree(func(dbe modules.HostDBEntry, tree string) (types.Currency, bool) {
 		calls++
-		return types.NewCurrency64(uint64(calls))
-	})
+		return types.NewCurrency64(uint64(calls)), false
+	}, "default")
 
 	// Empty.
 	hosts := tree.SelectRandom(1, nil)

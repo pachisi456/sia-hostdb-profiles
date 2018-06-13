@@ -88,8 +88,8 @@ func TestSaveLoad(t *testing.T) {
 	h1, ok0 := hdbt.hdb.hostTrees.Select(host1.PublicKey)
 	h2, ok1 := hdbt.hdb.hostTrees.Select(host2.PublicKey)
 	h3, ok2 := hdbt.hdb.hostTrees.Select(host3.PublicKey)
-	if !ok0 || !ok1 || !ok2 || len(hdbt.hdb.hostTrees.All()) != 3 {
-		t.Error("allHosts was not restored properly", ok0, ok1, ok2, len(hdbt.hdb.hostTrees.All()))
+	if !ok0 || !ok1 || !ok2 || len(hdbt.hdb.hostTrees.All("default")) != 3 {
+		t.Error("allHosts was not restored properly", ok0, ok1, ok2, len(hdbt.hdb.hostTrees.All("default")))
 	}
 	if h1.FirstSeen != 1 {
 		t.Error("h1 block height loaded incorrectly")
