@@ -12,7 +12,7 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/encoding"
 	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/pachisi456/sia-hostdb-profiles/persist"
-	"github.com/pachisi456/sia-hostdb-profiles/sync"
+	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
 
 	"github.com/NebulousLabs/demotemutex"
@@ -88,16 +88,24 @@ type ConsensusSet struct {
 
 	// Utilities
 	db         *persist.BoltDatabase
+	staticDeps modules.Dependencies
 	log        *persist.Logger
 	mu         demotemutex.DemoteMutex
 	persistDir string
-	tg         sync.ThreadGroup
+	tg         siasync.ThreadGroup
 }
 
 // New returns a new ConsensusSet, containing at least the genesis block. If
 // there is an existing block database present in the persist directory, it
 // will be loaded.
 func New(gateway modules.Gateway, bootstrap bool, persistDir string) (*ConsensusSet, error) {
+	return NewCustomConsensusSet(gateway, bootstrap, persistDir, modules.ProdDependencies)
+}
+
+// NewCustomConsensusSet returns a new ConsensusSet, containing at least the genesis block. If
+// there is an existing block database present in the persist directory, it
+// will be loaded.
+func NewCustomConsensusSet(gateway modules.Gateway, bootstrap bool, persistDir string, deps modules.Dependencies) (*ConsensusSet, error) {
 	// Check for nil dependencies.
 	if gateway == nil {
 		return nil, errNilGateway
@@ -121,6 +129,7 @@ func New(gateway modules.Gateway, bootstrap bool, persistDir string) (*Consensus
 		blockRuleHelper: stdBlockRuleHelper{},
 		blockValidator:  NewBlockValidator(),
 
+		staticDeps: deps,
 		persistDir: persistDir,
 	}
 

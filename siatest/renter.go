@@ -121,7 +121,7 @@ func (tn *TestNode) DownloadInfo(lf *LocalFile, rf *RemoteFile) (*api.DownloadIn
 	}
 	// Received data can't be larger than transferred data
 	if di.Received > di.TotalDataTransferred {
-		err = errors.AddContext(err, "received > TotalDataTransfered")
+		err = errors.AddContext(err, "received > TotalDataTransferred")
 	}
 	// If the download is completed, the amount of received data has to equal
 	// the amount of requested data.
@@ -129,6 +129,15 @@ func (tn *TestNode) DownloadInfo(lf *LocalFile, rf *RemoteFile) (*api.DownloadIn
 		err = errors.AddContext(err, "completed == true but received != length")
 	}
 	return di, err
+}
+
+// File returns the file queried by the user
+func (tn *TestNode) File(siaPath string) (modules.FileInfo, error) {
+	rf, err := tn.RenterFileGet(siaPath)
+	if err != nil {
+		return rf.File, err
+	}
+	return rf.File, err
 }
 
 // Files lists the files tracked by the renter
@@ -211,6 +220,7 @@ func (tn *TestNode) UploadNewFileBlocking(filesize int, dataPieces uint64, parit
 // contents of tf2 after the download is finished. WaitForDownload also
 // verifies the checksum of the downloaded file.
 func (tn *TestNode) WaitForDownload(lf *LocalFile, rf *RemoteFile) error {
+	var downloadErr error
 	err := Retry(1000, 100*time.Millisecond, func() error {
 		file, err := tn.DownloadInfo(lf, rf)
 		if err != nil {
@@ -222,10 +232,13 @@ func (tn *TestNode) WaitForDownload(lf *LocalFile, rf *RemoteFile) error {
 		if !file.Completed {
 			return errors.New("download hasn't finished yet")
 		}
+		if file.Error != "" {
+			downloadErr = errors.New(file.Error)
+		}
 		return nil
 	})
-	if err != nil {
-		return err
+	if err != nil || downloadErr != nil {
+		return errors.Compose(err, downloadErr)
 	}
 	// Verify checksum
 	return lf.checkIntegrity()

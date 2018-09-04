@@ -5,11 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/types"
-	"github.com/NebulousLabs/fastrand"
 	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/pachisi456/sia-hostdb-profiles/crypto"
+	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
+
+	"github.com/NebulousLabs/fastrand"
 )
 
 // mustAcquire is a convenience function for acquiring contracts that are
@@ -25,12 +26,16 @@ func (cs *ContractSet) mustAcquire(t *testing.T, id types.FileContractID) *SafeC
 
 // TestContractSet tests that the ContractSet type is safe for concurrent use.
 func TestContractSet(t *testing.T) {
+	if testing.Short() {
+		t.SkipNow()
+	}
 	// create contract set
 	testDir := build.TempDir(t.Name())
 	cs, err := NewContractSet(testDir, modules.ProdDependencies)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	header1 := contractHeader{Transaction: types.Transaction{
 		FileContractRevisions: []types.FileContractRevision{{
 			ParentID:             types.FileContractID{1},

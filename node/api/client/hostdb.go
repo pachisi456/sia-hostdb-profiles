@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+// HostDbGet requests the /hostdb endpoint's resources.
+func (c *Client) HostDbGet() (hdg api.HostdbGet, err error) {
+	err = c.get("/hostdb", &hdg)
+	return
+}
+
 // HostDbActiveGet requests the /hostdb/active endpoint's resources.
 func (c *Client) HostDbActiveGet() (hdag api.HostdbActiveGET, err error) {
 	err = c.get("/hostdb/active", &hdag)

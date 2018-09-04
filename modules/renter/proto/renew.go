@@ -1,19 +1,20 @@
 package proto
 
 import (
-	"errors"
 	"net"
 
 	"github.com/pachisi456/sia-hostdb-profiles/crypto"
 	"github.com/pachisi456/sia-hostdb-profiles/encoding"
 	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
+
+	"github.com/NebulousLabs/errors"
 )
 
 // Renew negotiates a new contract for data already stored with a host, and
 // submits the new contract transaction to tpool. The new contract is added to
 // the ContractSet and its metadata is returned.
-func (cs *ContractSet) Renew(oldContract *SafeContract, params ContractParams, txnBuilder transactionBuilder, tpool transactionPool, hdb hostDB, cancel <-chan struct{}) (modules.RenterContract, error) {
+func (cs *ContractSet) Renew(oldContract *SafeContract, params ContractParams, txnBuilder transactionBuilder, tpool transactionPool, hdb hostDB, cancel <-chan struct{}) (rc modules.RenterContract, err error) {
 	// for convenience
 	contract := oldContract.header
 
@@ -33,7 +34,7 @@ func (cs *ContractSet) Renew(oldContract *SafeContract, params ContractParams, t
 
 	// Calculate the anticipated transaction fee.
 	_, maxFee := tpool.FeeEstimation()
-	txnFee := maxFee.Mul64(estTxnSize)
+	txnFee := maxFee.Mul64(modules.EstimatedFileContractTransactionSetSize)
 
 	// Underflow check.
 	if funding.Cmp(host.ContractPrice.Add(txnFee).Add(basePrice)) <= 0 {
@@ -89,7 +90,7 @@ func (cs *ContractSet) Renew(oldContract *SafeContract, params ContractParams, t
 	}
 
 	// build transaction containing fc
-	err := txnBuilder.FundSiacoins(funding)
+	err = txnBuilder.FundSiacoins(funding)
 	if err != nil {
 		return modules.RenterContract{}, err
 	}
@@ -110,6 +111,7 @@ func (cs *ContractSet) Renew(oldContract *SafeContract, params ContractParams, t
 		// A revision mismatch might not be the host's fault.
 		if err != nil && !IsRevisionMismatch(err) {
 			hdb.IncrementFailedInteractions(contract.HostPublicKey())
+			err = errors.Extend(err, modules.ErrHostFault)
 		} else if err == nil {
 			hdb.IncrementSuccessfulInteractions(contract.HostPublicKey())
 		}
@@ -274,13 +276,18 @@ func (cs *ContractSet) Renew(oldContract *SafeContract, params ContractParams, t
 
 	// Construct contract header.
 	header := contractHeader{
-		Transaction: revisionTxn,
-		SecretKey:   ourSK,
-		StartHeight: startHeight,
-		TotalCost:   funding,
-		ContractFee: host.ContractPrice,
-		TxnFee:      txnFee,
-		SiafundFee:  types.Tax(startHeight, fc.Payout),
+		Transaction:     revisionTxn,
+		SecretKey:       ourSK,
+		StartHeight:     startHeight,
+		TotalCost:       funding,
+		ContractFee:     host.ContractPrice,
+		TxnFee:          txnFee,
+		SiafundFee:      types.Tax(startHeight, fc.Payout),
+		StorageSpending: basePrice,
+		Utility: modules.ContractUtility{
+			GoodForUpload: true,
+			GoodForRenew:  true,
+		},
 	}
 
 	// Get old roots

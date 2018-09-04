@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/siatest"
-	"github.com/NebulousLabs/Sia/types"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/siatest"
+	"github.com/pachisi456/sia-hostdb-profiles/types"
 )
 
 // TestTransactionReorg makes sure that a processedTransaction isn't returned

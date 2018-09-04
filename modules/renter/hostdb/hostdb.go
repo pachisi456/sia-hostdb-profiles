@@ -5,25 +5,27 @@
 package hostdb
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
 	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hosttree"
 	"github.com/pachisi456/sia-hostdb-profiles/persist"
-	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
+
+	"github.com/NebulousLabs/threadgroup"
+
 	"github.com/oschwald/geoip2-golang"
-	"net/http"
-	"io"
-	"compress/gzip"
-	"archive/tar"
-	"strings"
 )
 
 var (
@@ -50,7 +52,7 @@ type HostDB struct {
 	log        *persist.Logger
 	mu         sync.RWMutex
 	persistDir string
-	tg         siasync.ThreadGroup
+	tg         threadgroup.ThreadGroup
 
 	// database with ip information to determine host location
 	ipdb *geoip2.Reader
@@ -124,12 +126,17 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 		return nil, err
 	}
 	hdb.log = logger
-	hdb.tg.AfterStop(func() {
+	err = hdb.tg.AfterStop(func() error {
 		if err := hdb.log.Close(); err != nil {
 			// Resort to println as the logger is in an uncertain state.
 			fmt.Println("Failed to close the hostdb logger:", err)
+			return err
 		}
+		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	// Load the ip information database to determine host location (country).
 	db, err := geoip2.Open(filepath.Join(persistDir, geolocationDir, geolocationFile))
@@ -164,14 +171,19 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 	// Load the host trees, one tree for each hostdb profile.
 	hdb.loadHostTrees(allHosts)
 
-	hdb.tg.AfterStop(func() {
+	err = hdb.tg.AfterStop(func() error {
 		hdb.mu.Lock()
 		err := hdb.saveSync()
 		hdb.mu.Unlock()
 		if err != nil {
 			hdb.log.Println("Unable to save the hostdb:", err)
+			return err
 		}
+		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	// Loading is complete, establish the save loop.
 	go hdb.threadedSaveLoop()
@@ -206,9 +218,13 @@ func NewCustomHostDB(g modules.Gateway, cs modules.ConsensusSet, persistDir stri
 	if err != nil {
 		return nil, errors.New("hostdb subscription failed: " + err.Error())
 	}
-	hdb.tg.OnStop(func() {
+	err = hdb.tg.OnStop(func() error {
 		cs.Unsubscribe(hdb)
+		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	// Spawn the scan loop during production, but allow it to be disrupted
 	// during testing. Primary reason is so that we can fill the hostdb with
@@ -241,7 +257,7 @@ func (hdb *HostDB) ActiveHosts(tree string) (activeHosts []modules.HostDBEntry) 
 	return activeHosts
 }
 
-// AddHostDBProfile adds a new hostdb profile to HostDBProfiles.
+// AddHostDBProfiles adds a new hostdb profile to HostDBProfiles.
 func (hdb *HostDB) AddHostDBProfiles(name string, storagetier string) (err error) {
 	// add profile
 	err = hdb.hostdbProfiles.AddHostDBProfile(name, storagetier)
@@ -307,7 +323,7 @@ func (hdb *HostDB) HostDBProfile(name string) hostdbprofile.HostDBProfile {
 	return hdb.hostdbProfiles.GetProfile(name)
 }
 
-// ConfigHostDBProfiles updates the provided setting of the hostdb profile with the provided
+// ConfigHostDBProfile updates the provided setting of the hostdb profile with the provided
 // name to the provided value.
 func (hdb *HostDB) ConfigHostDBProfile(name, setting, value string) (err error) {
 	// Change setting.
@@ -379,6 +395,19 @@ func (hdb *HostDB) loadHostTrees(allHosts []modules.HostDBEntry) (err error) {
 			hdb.log.Println("Unable to save the host tree:", err)
 		}
 	}
+	return
+}
+
+// InitialScanComplete returns a boolean indicating if the initial scan of the
+// hostdb is completed.
+func (hdb *HostDB) InitialScanComplete() (complete bool, err error) {
+	if err = hdb.tg.Add(); err != nil {
+		return
+	}
+	defer hdb.tg.Done()
+	hdb.mu.Lock()
+	defer hdb.mu.Unlock()
+	complete = hdb.initialScanComplete
 	return
 }
 

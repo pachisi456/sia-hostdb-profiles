@@ -1,6 +1,8 @@
 package siatest
 
-import "github.com/pachisi456/sia-hostdb-profiles/build"
+import (
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+)
 
 // hasPeer checks if peer is a peer of tn.
 func (tn *TestNode) hasPeer(peer *TestNode) (bool, error) {

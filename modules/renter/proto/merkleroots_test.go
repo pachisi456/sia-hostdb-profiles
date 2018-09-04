@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/NebulousLabs/Sia/build"
-	"github.com/NebulousLabs/Sia/crypto"
+	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"github.com/pachisi456/sia-hostdb-profiles/crypto"
 	"github.com/NebulousLabs/errors"
 	"github.com/NebulousLabs/fastrand"
 )

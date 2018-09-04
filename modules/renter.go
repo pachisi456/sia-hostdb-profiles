@@ -8,12 +8,30 @@ import (
 	"github.com/pachisi456/sia-hostdb-profiles/crypto"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
 	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
+
+	"github.com/NebulousLabs/errors"
 )
+
+// ErrHostFault is an error that is usually extended to indicate that an error
+// is the host's fault.
+var ErrHostFault = errors.New("host has returned an error")
+
+// IsHostsFault indicates if a returned error is the host's fault.
+func IsHostsFault(err error) bool {
+	return errors.Contains(err, ErrHostFault)
+}
 
 const (
 	// RenterDir is the name of the directory that is used to store the
 	// renter's persistent data.
 	RenterDir = "renter"
+
+	// EstimatedFileContractTransactionSetSize is the estimated blockchain size
+	// of a transaction set between a renter and a host that contains a file
+	// contract. This transaction set will contain a setup transaction from each
+	// the host and the renter, and will also contain a file contract and file
+	// contract revision that have each been signed by all parties.
+	EstimatedFileContractTransactionSetSize = 2048
 )
 
 // An ErasureCoder is an error-correcting encoder and decoder.
@@ -28,6 +46,10 @@ type ErasureCoder interface {
 	// Encode splits data into equal-length pieces, with some pieces
 	// containing parity data.
 	Encode(data []byte) ([][]byte, error)
+
+	// EncodeShards encodes the input data like Encode but accepts an already
+	// sharded input.
+	EncodeShards(data [][]byte) ([][]byte, error)
 
 	// Recover recovers the original data from pieces and writes it to w.
 	// pieces should be identical to the slice returned by Encode (length and
@@ -51,6 +73,7 @@ type Allowance struct {
 type ContractUtility struct {
 	GoodForUpload bool
 	GoodForRenew  bool
+	Locked        bool // Locked utilities can only be set to false.
 }
 
 // DownloadInfo provides information about a file that has been requested for
@@ -67,6 +90,7 @@ type DownloadInfo struct {
 	Error                string    `json:"error"`                // Will be the empty string unless there was an error.
 	Received             uint64    `json:"received"`             // Amount of data confirmed and decoded.
 	StartTime            time.Time `json:"starttime"`            // The time when the download was started.
+	StartTimeUnix        int64     `json:"starttimeunix"`        // The time when the download was started in unix format.
 	TotalDataTransferred uint64    `json:"totaldatatransferred"` // Total amount of data transferred, including negotiation, etc.
 }
 
@@ -173,6 +197,7 @@ type RenterSettings struct {
 	Allowance        Allowance `json:"allowance"`
 	MaxUploadSpeed   int64     `json:"maxuploadspeed"`
 	MaxDownloadSpeed int64     `json:"maxdownloadspeed"`
+	StreamCacheSize  uint64    `json:"streamcachesize"`
 }
 
 // HostDBScans represents a sortable slice of scans.
@@ -286,6 +311,16 @@ type ContractorSpending struct {
 	// ContractSpendingDeprecated was renamed to TotalAllocated and always has the
 	// same value as TotalAllocated.
 	ContractSpendingDeprecated types.Currency `json:"contractspending"`
+	// WithheldFunds are the funds from the previous period that are tied up
+	// in contracts and have not been released yet
+	WithheldFunds types.Currency `json:"withheldfunds"`
+	// ReleaseBlock is the block at which the WithheldFunds should be
+	// released to the renter, based on worst case.
+	// Contract End Height + Host Window Size + Maturity Delay
+	ReleaseBlock types.BlockHeight `json:"releaseblock"`
+	// PreviousSpending is the total spend funds from old contracts
+	// that are not included in the current period spending
+	PreviousSpending types.Currency `json:"previousspending"`
 }
 
 // A Renter uploads, tracks, repairs, and downloads a set of files for the
@@ -308,11 +343,14 @@ type Renter interface {
 	// provided name to the provided value. All parameters are checked for validity.
 	ConfigHostDBProfiles(name, setting, value string) (err error)
 
-	// Contracts returns the contracts formed by the renter.
+	// Contracts returns the staticContracts of the renter's hostContractor.
 	Contracts() []RenterContract
 
-	// ContractUtility provides the contract utility for a given id
-	ContractUtility(id types.FileContractID) (ContractUtility, bool)
+	// OldContracts returns the oldContracts of the renter's hostContractor.
+	OldContracts() []RenterContract
+
+	// ContractUtility provides the contract utility for a given host key.
+	ContractUtility(pk types.SiaPublicKey) (ContractUtility, bool)
 
 	// CurrentPeriod returns the height at which the current allowance period
 	// began.
@@ -332,8 +370,19 @@ type Renter interface {
 	// downloads of `offset` and `length` type.
 	Download(params RenterDownloadParameters) error
 
+	// Download performs a download according to the parameters passed without
+	// blocking, including downloads of `offset` and `length` type.
+	DownloadAsync(params RenterDownloadParameters) error
+
+	// ClearDownloadHistory clears the download history of the renter
+	// inclusive for before and after times.
+	ClearDownloadHistory(after, before time.Time) error
+
 	// DownloadHistory lists all the files that have been scheduled for download.
 	DownloadHistory() []DownloadInfo
+
+	// File returns information on specific file queried by user
+	File(siaPath string) (FileInfo, error)
 
 	// FileList returns information on all of the files stored by the renter.
 	FileList() []FileInfo
@@ -343,6 +392,10 @@ type Renter interface {
 
 	// HostDBProfiles returns the map of set hostdb profiles.
 	HostDBProfiles() map[string]*hostdbprofile.HostDBProfile
+	
+	// InitialScanComplete returns a boolean indicating if the initial scan of the
+	// hostdb is completed.
+	InitialScanComplete() (bool, error)
 
 	// LoadSharedFiles loads a '.sia' file into the renter. A .sia file may
 	// contain multiple files. The paths of the added files are returned.

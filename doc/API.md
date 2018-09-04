@@ -212,13 +212,14 @@ The JSON formatted block or a standard error response.
     "parentid": "0000000000009615e8db750eb1226aa5e629bfa7badbfe0b79607ec8b918a44c",
     "timestamp": 1444516982,
     "transactions": [
-	{
+        {
 	    // ...
-	}
+        },
         {
             "arbitrarydata": [],
             "filecontractrevisions": [],
             "filecontracts": [],
+            "id": "3c98ec79b990461f353c22bb06bcfb10e702f529ad7d27a43c4448273553d90a",
             "minerfees": [],
             "siacoininputs": [
                 {
@@ -237,10 +238,12 @@ The JSON formatted block or a standard error response.
             ],
             "siacoinoutputs": [
                 {
+                    "id": "1f9da81e23522f79590ac67ac0b668828c52b341cbf04df4959bb7040c072f29",
                     "unlockhash": "d54f500f6c1774d518538dbe87114fe6f7e6c76b5bc8373a890b12ce4b8909a336106a4cd6db",
                     "value": "1010000000000000000000000000"
                 },
                 {
+                    "id": "14978a4c54f5ebd910ea41537de014f8423574c13d132e8713fab5af09ec08ca",
                     "unlockhash": "48a56b19bd0be4f24190640acbd0bed9669ea9c18823da2645ec1ad9652f10b06c5d4210f971",
                     "value": "5780000000000000000000000000"
                 }
@@ -653,12 +656,27 @@ Host DB
 
 | Route                                                   | HTTP verb |
 | ------------------------------------------------------- | --------- |
+| [/hostdb](#hostdb-get-example)                          | GET       |
 | [/hostdb/active](#hostdbactive-get-example)             | GET       |
 | [/hostdb/all](#hostdball-get-example)                   | GET       |
 | [/hostdb/hosts/:___pubkey___](#hostdbhostspubkey-get-example) | GET       |
 
 For examples and detailed descriptions of request and response parameters,
 refer to [HostDB.md](/doc/api/HostDB.md).
+
+#### /hostdb [GET] [(example)](/doc/api/HostDB.md#hostdb-get)
+
+shows some general information about the state of the hostdb.
+
+###### JSON Response [(with comments)](/doc/api/HostDB.md#json-response)
+
+Either the following JSON struct or an error response. See [#standard-responses](#standard-responses).
+
+```javascript
+{
+    "initialscancomplete": false
+}
+```
 
 #### /hostdb/active [GET] [(example)](/doc/api/HostDB.md#active-hosts)
 
@@ -669,7 +687,7 @@ lists all of the active hosts known to the renter, sorted by preference.
 numhosts // Optional
 ```
 
-###### JSON Response [(with comments)](/doc/api/HostDB.md#json-response)
+###### JSON Response [(with comments)](/doc/api/HostDB.md#json-response-1)
 ```javascript
 {
   "hosts": [
@@ -699,7 +717,7 @@ numhosts // Optional
 lists all of the hosts known to the renter. Hosts are not guaranteed to be in
 any particular order, and the order may change in subsequent calls.
 
-###### JSON Response [(with comments)](/doc/api/HostDB.md#json-response-1)
+###### JSON Response [(with comments)](/doc/api/HostDB.md#json-response-2)
 ```javascript
 {
   "hosts": [
@@ -737,7 +755,7 @@ overall.
 :pubkey
 ```
 
-###### JSON Response [(with comments)](/doc/api/HostDB.md#json-response-2)
+###### JSON Response [(with comments)](/doc/api/HostDB.md#json-response-3)
 ```javascript
 {
   "entry": {
@@ -845,20 +863,22 @@ description of the byte encoding.
 Renter
 ------
 
-| Route                                                                   | HTTP verb |
-| ----------------------------------------------------------------------- | --------- |
-| [/renter](#renter-get)                                                  | GET       |
-| [/renter](#renter-post)                                                 | POST      |
-| [/renter/contracts](#rentercontracts-get)                               | GET       |
-| [/renter/downloads](#renterdownloads-get)                               | GET       |
-| [/renter/prices](#renterprices-get)                                     | GET       |
-| [/renter/files](#renterfiles-get)                                       | GET       |
-| [/renter/delete/*___siapath___](#renterdeletesiapath-post)              | POST      |
-| [/renter/download/*___siapath___](#renterdownloadsiapath-get)           | GET       |
-| [/renter/downloadasync/*___siapath___](#renterdownloadasyncsiapath-get) | GET       |
-| [/renter/rename/*___siapath___](#renterrenamesiapath-post)              | POST      |
-| [/renter/stream/*___siapath___](#renterstreamsiapath-get)               | GET       |
-| [/renter/upload/*___siapath___](#renteruploadsiapath-post)              | POST      |
+| Route                                                                     | HTTP verb |
+| --------------------------------------------------------------------------| --------- |
+| [/renter](#renter-get)                                                    | GET       |
+| [/renter](#renter-post)                                                   | POST      |
+| [/renter/contracts](#rentercontracts-get)                                 | GET       |
+| [/renter/downloads](#renterdownloads-get)                                 | GET       |
+| [/renter/downloads/clear](#renterdownloadsclear-post)                     | POST      |
+| [/renter/prices](#renterprices-get)                                       | GET       |
+| [/renter/files](#renterfiles-get)                                         | GET       |
+| [/renter/file/*___siapath___](#renterfile___siapath___-get)               | GET       |
+| [/renter/delete/*___siapath___](#renterdeletesiapath-post)                | POST      |
+| [/renter/download/*___siapath___](#renterdownloadsiapath-get)             | GET       |
+| [/renter/downloadasync/*___siapath___](#renterdownloadasyncsiapath-get)   | GET       |
+| [/renter/rename/*___siapath___](#renterrenamesiapath-post)                | POST      |
+| [/renter/stream/*___siapath___](#renterstreamsiapath-get)                 | GET       |
+| [/renter/upload/*___siapath___](#renteruploadsiapath-post)                | POST      |
 
 For examples and detailed descriptions of request and response parameters,
 refer to [Renter.md](/doc/api/Renter.md).
@@ -876,7 +896,10 @@ returns the current settings along with metrics on the renter's spending.
       "hosts":       24,
       "period":      6048, // blocks
       "renewwindow": 3024  // blocks
-    }
+    },
+    "maxuploadspeed":     1234, // BPS
+    "maxdownloadspeed":   1234, // BPS
+    "streamcachesize":  4    
   },
   "financialmetrics": {
     "contractfees":     "1234", // hastings
@@ -887,7 +910,7 @@ returns the current settings along with metrics on the renter's spending.
     "uploadspending":   "5678", // hastings
     "unspent":          "1234"  // hastings
   },
-  "currentperiod": "200"
+  "currentperiod": 200
 }
 ```
 
@@ -897,10 +920,13 @@ modify settings that control the renter's behavior.
 
 ###### Query String Parameters [(with comments)](/doc/api/Renter.md#query-string-parameters)
 ```
-funds // hastings
+funds             // hastings
 hosts
-period      // block height
-renewwindow // block height
+period            // block height
+renewwindow       // block height
+maxdownloadspeed  // bytes per second
+maxuploadspeed    // bytes per second
+streamcachesize   // number of data chunks cached when streaming
 ```
 
 ###### Response
@@ -909,12 +935,24 @@ standard success or error response. See
 
 #### /renter/contracts [GET]
 
-returns active contracts. Expired contracts are not included.
+returns the renter's contracts.  Active contracts are contracts that the Renter
+is currently using to store, upload, and download data, and are returned by
+default. Inactive contracts are contracts that are in the current period but are
+marked as not good for renew, these contracts have the potential to become
+active again but currently are not storing data.  Expired contracts are
+contracts not in the current period, where not more data is being stored and
+excess funds have been released to the renter.
+
+###### Contract Parameters [(with comments)](/doc/api/Renter.md#contract-parameters)
+```
+inactive   // true or false - Optional
+expired    // true or false - Optional
+```
 
 ###### JSON Response [(with comments)](/doc/api/Renter.md#json-response-1)
 ```javascript
 {
-  "contracts": [
+  "activecontracts": [
     {
       "downloadspending": "1234", // hastings
       "endheight": 50000, // block height
@@ -936,7 +974,9 @@ returns active contracts. Expired contracts are not included.
       "goodforupload": true,
       "goodforrenew": false,
     }
-  ]
+  ],
+  "inactivecontracts": [],
+  "expiredcontracts": [],
 }
 ```
 
@@ -966,6 +1006,25 @@ lists all files in the download queue.
 }
 ```
 
+#### /renter/downloads/clear [POST]
+
+Clears the download history of the renter for a range of unix time stamps.  Both
+parameters are optional, if no parameters are provided, the entire download
+history will be cleared.  To clear a single download, provide the timestamp for
+the download as both parameters.  Providing only the before parameter will clear
+all downloads older than the timestamp.  Conversely, providing only the after
+parameter will clear all downloads newer than the timestamp.
+
+###### Timestamp Parameters [(with comments)](/doc/api/Renter.md#timestamp-parameters)
+```
+before   // Optional
+after    // Optional
+```
+
+###### Response
+standard success or error response. See
+[#standard-responses](#standard-responses).
+
 #### /renter/files [GET]
 
 lists the status of all files.
@@ -989,11 +1048,32 @@ lists the status of all files.
 }
 ```
 
+#### /renter/file/*__siapath__ [GET]
+
+lists the status of specified file.
+
+###### JSON Response [(with comments)](/doc/api/Renter.md#json-response-4)
+```javascript
+{
+  "file": {
+    "siapath":        "foo/bar.txt",
+    "localpath":      "/home/foo/bar.txt",
+    "filesize":       8192, // bytes
+    "available":      true,
+    "renewing":       true,
+    "redundancy":     5,
+    "bytesuploaded":  209715200, // total bytes uploaded
+    "uploadprogress": 100, // percent
+    "expiration":     60000
+  }
+}
+```
+
 #### /renter/prices [GET]
 
 lists the estimated prices of performing various storage and data operations.
 
-###### JSON Response [(with comments)](/doc/api/Renter.md#json-response-4)
+###### JSON Response [(with comments)](/doc/api/Renter.md#json-response-5)
 ```javascript
 {
   "downloadterabyte":      "1234", // hastings

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
 	"github.com/pachisi456/sia-hostdb-profiles/persist"
 	"github.com/pachisi456/sia-hostdb-profiles/types"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
 )
 
 var (
