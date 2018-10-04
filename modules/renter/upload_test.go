@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"gitlab.com/NebulousLabs/Sia/modules"
 )
 
 // TestRenterUploadDirectory verifies that the renter returns an error if a

@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // TestIntegrationExplorerGET probes the GET call to /explorer.

@@ -5,16 +5,16 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/consensus"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/gateway"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/miner"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/contractor"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/transactionpool"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/wallet"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/modules/consensus"
+	"gitlab.com/NebulousLabs/Sia/modules/gateway"
+	"gitlab.com/NebulousLabs/Sia/modules/miner"
+	"gitlab.com/NebulousLabs/Sia/modules/renter/contractor"
+	"gitlab.com/NebulousLabs/Sia/modules/transactionpool"
+	"gitlab.com/NebulousLabs/Sia/modules/wallet"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // renterTester contains all of the modules that are used while testing the renter.
@@ -147,7 +147,7 @@ type pricesStub struct {
 
 func (pricesStub) InitialScanComplete() (bool, error) { return true, nil }
 
-func (ps pricesStub) RandomHosts(n int, exclude []types.SiaPublicKey) ([]modules.HostDBEntry, error) {
+func (ps pricesStub) RandomHosts(n int, blacklist, addressBlacklist []types.SiaPublicKey) ([]modules.HostDBEntry, error) {
 	return ps.dbEntries, nil
 }
 
@@ -216,6 +216,7 @@ func TestRenterSiapathValidate(t *testing.T) {
 		{"/leading/slash", false},
 		{"foo/./bar", false},
 		{"", false},
+		{"blank/end/", false},
 	}
 	for _, pathtest := range pathtests {
 		err := validateSiapath(pathtest.in)

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // TestAnnouncementHandling checks that CreateAnnouncement and

@@ -12,20 +12,20 @@ package node
 import (
 	"path/filepath"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/consensus"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/gateway"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/host"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/miner"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/contractor"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/proto"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/transactionpool"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/wallet"
-	"github.com/pachisi456/sia-hostdb-profiles/persist"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/modules/consensus"
+	"gitlab.com/NebulousLabs/Sia/modules/gateway"
+	"gitlab.com/NebulousLabs/Sia/modules/host"
+	"gitlab.com/NebulousLabs/Sia/modules/miner"
+	"gitlab.com/NebulousLabs/Sia/modules/renter"
+	"gitlab.com/NebulousLabs/Sia/modules/renter/contractor"
+	"gitlab.com/NebulousLabs/Sia/modules/renter/hostdb"
+	"gitlab.com/NebulousLabs/Sia/modules/renter/proto"
+	"gitlab.com/NebulousLabs/Sia/modules/transactionpool"
+	"gitlab.com/NebulousLabs/Sia/modules/wallet"
+	"gitlab.com/NebulousLabs/Sia/persist"
 
-	"github.com/NebulousLabs/errors"
+	"gitlab.com/NebulousLabs/errors"
 )
 
 // NodeParams contains a bunch of parameters for creating a new test node. As
@@ -86,8 +86,9 @@ type NodeParams struct {
 	Allowance modules.Allowance
 
 	// The following fields are used to skip parts of the node set up
-	SkipSetAllowance  bool
-	SkipHostDiscovery bool
+	SkipSetAllowance     bool
+	SkipHostDiscovery    bool
+	SkipHostAnnouncement bool
 
 	// The high level directory where all the persistence gets stored for the
 	// modules.
@@ -244,7 +245,7 @@ func New(params NodeParams) (*Node, error) {
 		if !params.CreateHost {
 			return nil, nil
 		}
-		return host.New(cs, tp, w, "localhost:0", filepath.Join(dir, modules.HostDir))
+		return host.New(cs, g, tp, w, "localhost:0", filepath.Join(dir, modules.HostDir))
 	}()
 	if err != nil {
 		return nil, errors.Extend(err, errors.New("unable to create host"))

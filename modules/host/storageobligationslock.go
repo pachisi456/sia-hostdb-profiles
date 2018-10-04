@@ -3,8 +3,8 @@ package host
 import (
 	"errors"
 
-	"github.com/pachisi456/sia-hostdb-profiles/sync"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/sync"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 var (

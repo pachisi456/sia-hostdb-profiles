@@ -3,9 +3,9 @@ package client
 import (
 	"net/url"
 
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/node/api"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/node/api"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // TransactionPoolFeeGet uses the /tpool/fee endpoint to get a fee estimation.

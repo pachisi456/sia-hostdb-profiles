@@ -7,8 +7,8 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/crypto"
 )
 
 type (

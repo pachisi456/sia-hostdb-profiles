@@ -4,16 +4,16 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/consensus"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/gateway"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/miner"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/transactionpool"
-	modWallet "github.com/pachisi456/sia-hostdb-profiles/modules/wallet" // name conflicts with type
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/modules/consensus"
+	"gitlab.com/NebulousLabs/Sia/modules/gateway"
+	"gitlab.com/NebulousLabs/Sia/modules/miner"
+	"gitlab.com/NebulousLabs/Sia/modules/renter/hostdb"
+	"gitlab.com/NebulousLabs/Sia/modules/transactionpool"
+	modWallet "gitlab.com/NebulousLabs/Sia/modules/wallet" // name conflicts with type
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // contractorTester contains all of the modules that are used while testing the contractor.

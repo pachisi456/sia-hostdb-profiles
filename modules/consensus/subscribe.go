@@ -4,11 +4,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/modules"
 
 	"github.com/coreos/bbolt"
+	siasync "gitlab.com/NebulousLabs/Sia/sync"
 )
 
 // computeConsensusChange computes the consensus change from the change entry

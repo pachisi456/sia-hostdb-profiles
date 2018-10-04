@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/modules"
 )
 
 // TestIpRPC tests the ip discovery RPC.
@@ -70,7 +70,7 @@ func TestIPFromPeers(t *testing.T) {
 	}
 
 	// Discover ip using the peers
-	host, err := g1.managedIPFromPeers()
+	host, err := g1.managedIPFromPeers(nil)
 	if err != nil {
 		t.Fatal("failed to get ip", err)
 	}

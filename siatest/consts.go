@@ -1,8 +1,8 @@
 package siatest
 
 import (
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/modules"
 )
 
 // ChunkSize is a helper method to calculate the size of a chunk depending on

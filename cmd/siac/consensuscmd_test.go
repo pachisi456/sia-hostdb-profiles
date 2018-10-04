@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // TestEstimatedHeightAt tests that the expectedHeightAt function correctly

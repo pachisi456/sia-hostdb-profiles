@@ -3,14 +3,14 @@ package transactionpool
 import (
 	"errors"
 
-	"github.com/NebulousLabs/demotemutex"
 	"github.com/coreos/bbolt"
+	"gitlab.com/NebulousLabs/demotemutex"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/persist"
-	"github.com/pachisi456/sia-hostdb-profiles/sync"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/persist"
+	"gitlab.com/NebulousLabs/Sia/sync"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 var (

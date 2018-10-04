@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
+	"gitlab.com/NebulousLabs/Sia/crypto"
 )
 
 const (

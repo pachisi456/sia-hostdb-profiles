@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/types"
 
 	"github.com/coreos/bbolt"
 )

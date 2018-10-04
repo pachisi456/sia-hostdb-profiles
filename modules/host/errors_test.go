@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"gitlab.com/NebulousLabs/Sia/modules"
 )
 
 // countFileLines is a helper function that will count the number of lines in a

@@ -3,8 +3,8 @@ package wallet
 import (
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // TestUpdate tests that the wallet processes consensus updates properly.

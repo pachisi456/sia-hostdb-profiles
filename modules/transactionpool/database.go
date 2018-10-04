@@ -3,13 +3,13 @@ package transactionpool
 import (
 	"encoding/json"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 
-	"github.com/NebulousLabs/errors"
 	"github.com/coreos/bbolt"
+	"gitlab.com/NebulousLabs/errors"
 )
 
 // database.go contains objects related to the layout of the transaction pool's

@@ -5,8 +5,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
 	"github.com/spf13/cobra"
+	"gitlab.com/NebulousLabs/Sia/modules"
 )
 
 var (

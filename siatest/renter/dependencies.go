@@ -1,8 +1,8 @@
 package renter
 
 import (
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/siatest"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/siatest"
 )
 
 // dependencyBlockScan blocks the scan progress of the hostdb until Scan is
@@ -32,6 +32,13 @@ func (d *dependencyBlockScan) Scan() {
 	}
 	close(d.c)
 	d.closed = true
+}
+
+// newDependencyInterruptContractSaveToDiskAfterDeletion creates a new
+// dependency that interrupts the contract being saved to disk after being
+// removed from static contracts
+func newDependencyInterruptContractSaveToDiskAfterDeletion() *siatest.DependencyInterruptOnceOnKeyword {
+	return siatest.NewDependencyInterruptOnceOnKeyword("InterruptContractSaveToDiskAfterDeletion")
 }
 
 // newDependencyInterruptDownloadBeforeSendingRevision creates a new dependency

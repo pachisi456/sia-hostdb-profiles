@@ -13,18 +13,18 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hosttree"
-	"github.com/pachisi456/sia-hostdb-profiles/persist"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/modules/renter/hostdb/hostdbprofile"
+	"gitlab.com/NebulousLabs/Sia/modules/renter/hostdb/hosttree"
+	"gitlab.com/NebulousLabs/Sia/persist"
+	"gitlab.com/NebulousLabs/Sia/types"
 
-	"github.com/NebulousLabs/threadgroup"
-
+	"gitlab.com/NebulousLabs/threadgroup"
 	"github.com/oschwald/geoip2-golang"
 )
 
@@ -37,7 +37,6 @@ var (
 )
 
 // Directory and file for ip information database.
-//TODO pachisi456: use more straight forward naming
 const geolocationDir = "geolocation"
 const geolocationFile = "ip-database.mmdb"
 
@@ -285,7 +284,7 @@ func (hdb *HostDB) AllHosts(tree string) (allHosts []modules.HostDBEntry) {
 func (hdb *HostDB) AverageContractPrice(tree string) (totalPrice types.Currency) {
 	sampleSize := 32
 	//TODO pachisi456: add support for multiple profiles / trees
-	hosts := hdb.hostTrees.SelectRandom(tree, sampleSize, nil)
+	hosts := hdb.hostTrees.SelectRandom(tree, sampleSize, nil, nil)
 	if len(hosts) == 0 {
 		return totalPrice
 	}
@@ -293,6 +292,45 @@ func (hdb *HostDB) AverageContractPrice(tree string) (totalPrice types.Currency)
 		totalPrice = totalPrice.Add(host.ContractPrice)
 	}
 	return totalPrice.Div64(uint64(len(hosts)))
+}
+
+// CheckForIPViolations accepts a number of host public keys and returns the
+// ones that violate the rules of the addressFilter.
+func (hdb *HostDB) CheckForIPViolations(hosts []types.SiaPublicKey) []types.SiaPublicKey {
+	var entries []modules.HostDBEntry
+	var badHosts []types.SiaPublicKey
+
+	// Get the entries which correspond to the keys.
+	for _, host := range hosts {
+		entry, exists := hdb.hostTree.Select(host)
+		if !exists {
+			// A host that's not in the hostdb is bad.
+			badHosts = append(badHosts, host)
+			continue
+		}
+		entries = append(entries, entry)
+	}
+
+	// Sort the entries by the amount of time they have occupied their
+	// corresponding subnets. This is the order in which they will be passed
+	// into the filter which prioritizes entries which are passed in earlier.
+	// That means 'younger' entries will be replaced in case of a violation.
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].LastIPNetChange.Before(entries[j].LastIPNetChange)
+	})
+
+	// Create a filter and apply it.
+	filter := hosttree.NewFilter(hdb.deps.Resolver())
+	for _, entry := range entries {
+		// Check if the host violates the rules.
+		if filter.Filtered(entry.NetAddress) {
+			badHosts = append(badHosts, entry.PublicKey)
+			continue
+		}
+		// If it didn't then we add it to the filter.
+		filter.Add(entry.NetAddress)
+	}
+	return badHosts
 }
 
 // Close closes the hostdb, terminating its scanning threads
@@ -312,6 +350,8 @@ func (hdb *HostDB) Host(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 	hdb.mu.RUnlock()
 	return host, exists
 }
+
+
 
 // HostDBProfiles returns the map of all set hostdb profiles.
 func (hdb *HostDB) HostDBProfiles() (hdbp map[string]*hostdbprofile.HostDBProfile) {
@@ -413,15 +453,15 @@ func (hdb *HostDB) InitialScanComplete() (complete bool, err error) {
 
 // RandomHosts implements the HostDB interface's RandomHosts() method. It takes
 // the tree from which the hosts should be picked, a number of hosts to return,
-// and a slice of public keys to exclude, and returns a slice of entries.
-func (hdb *HostDB) RandomHosts(tree string, n int, excludeKeys []types.SiaPublicKey) ([]modules.HostDBEntry, error) {
+// and two slices of public keys to ignore, and returns a slice of entries.
+func (hdb *HostDB) RandomHosts(tree string, n int, blacklist, addressBlacklist []types.SiaPublicKey) ([]modules.HostDBEntry, error) {
 	hdb.mu.RLock()
 	initialScanComplete := hdb.initialScanComplete
 	hdb.mu.RUnlock()
 	if !initialScanComplete {
 		return []modules.HostDBEntry{}, ErrInitialScanIncomplete
 	}
-	return hdb.hostTrees.SelectRandom(tree, n, excludeKeys), nil
+	return hdb.hostTrees.SelectRandom(tree, n, blacklist, addressBlacklist), nil
 }
 
 // UntarGeoLite2 untars the GeoLite2 database downloaded from MaxMind and saves it

@@ -3,7 +3,7 @@ package modules
 import (
 	"io"
 
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 const (

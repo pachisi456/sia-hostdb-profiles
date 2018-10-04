@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/node/api/client"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/node/api/client"
 )
 
 // TestLatestRelease tests that the latestRelease function properly processes a

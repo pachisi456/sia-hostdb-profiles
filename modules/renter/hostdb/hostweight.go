@@ -5,9 +5,9 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 var (
@@ -273,7 +273,16 @@ func versionAdjustments(entry modules.HostDBEntry) float64 {
 	if build.VersionCmp(entry.Version, "1.4.0") < 0 {
 		base = base * 0.99999 // Safety value to make sure we update the version penalties every time we update the host.
 	}
-	if build.VersionCmp(entry.Version, "1.3.2") < 0 {
+	// -10% for being below 1.3.5.
+	if build.VersionCmp(entry.Version, "1.3.5") < 0 {
+		base = base * 0.9
+	}
+	// -10% for being below 1.3.4.
+	if build.VersionCmp(entry.Version, "1.3.4") < 0 {
+		base = base * 0.9
+	}
+	// -10% for being below 1.3.3.
+	if build.VersionCmp(entry.Version, "1.3.3") < 0 {
 		base = base * 0.9
 	}
 	// we shouldn't use pre hardfork hosts

@@ -3,8 +3,8 @@ package api
 import (
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/gateway"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/modules/gateway"
 )
 
 // TestGatewayStatus checks that the /gateway/status call is returning a corect

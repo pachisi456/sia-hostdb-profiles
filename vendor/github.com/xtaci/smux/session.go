@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	siasync "github.com/pachisi456/sia-hostdb-profiles/sync" // TODO: Replace with github.com/NebulousLabs/trymutex
 	"github.com/pkg/errors"
+	siasync "gitlab.com/NebulousLabs/Sia/sync" // TODO: Replace with gitlab.com/NebulousLabs/trymutex
 )
 
 const (

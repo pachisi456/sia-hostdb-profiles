@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"gitlab.com/NebulousLabs/Sia/build"
 )
 
 // TestThreadGroupStopEarly tests that a thread group can correctly interrupt

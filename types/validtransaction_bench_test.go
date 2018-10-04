@@ -3,8 +3,8 @@ package types
 import (
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/encoding"
 )
 
 // BenchmarkStandaloneValid times how long it takes to verify a single

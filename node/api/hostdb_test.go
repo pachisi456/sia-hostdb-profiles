@@ -10,16 +10,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/consensus"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/gateway"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/host"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/miner"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/transactionpool"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/wallet"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/modules/consensus"
+	"gitlab.com/NebulousLabs/Sia/modules/gateway"
+	"gitlab.com/NebulousLabs/Sia/modules/host"
+	"gitlab.com/NebulousLabs/Sia/modules/miner"
+	"gitlab.com/NebulousLabs/Sia/modules/renter"
+	"gitlab.com/NebulousLabs/Sia/modules/transactionpool"
+	"gitlab.com/NebulousLabs/Sia/modules/wallet"
 )
 
 // TestHostDBHostsActiveHandler checks the behavior of the call to
@@ -280,7 +280,7 @@ func assembleHostPort(key crypto.TwofishKey, hostHostname string, testdir string
 	if err != nil {
 		return nil, err
 	}
-	h, err := host.New(cs, tp, w, hostHostname, filepath.Join(testdir, modules.HostDir))
+	h, err := host.New(cs, g, tp, w, hostHostname, filepath.Join(testdir, modules.HostDir))
 	if err != nil {
 		return nil, err
 	}

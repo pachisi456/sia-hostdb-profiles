@@ -7,7 +7,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"gitlab.com/NebulousLabs/Sia/build"
 )
 
 // Logger is a wrapper for the standard library logger that enforces logging

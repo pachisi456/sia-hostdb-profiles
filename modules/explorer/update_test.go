@@ -3,8 +3,8 @@ package explorer
 import (
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 func (et *explorerTester) currentFacts() (facts modules.BlockFacts, exists bool) {

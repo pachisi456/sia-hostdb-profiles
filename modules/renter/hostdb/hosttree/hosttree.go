@@ -5,10 +5,10 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
-	"github.com/NebulousLabs/fastrand"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/NebulousLabs/fastrand"
 )
 
 var (
@@ -56,6 +56,10 @@ type (
 		// hosts is a map of public keys to nodes.
 		hosts map[string]*node
 
+		// resolver is the Resolver that is used by the hosttree to resolve
+		// hostnames to IP addresses.
+		resolver modules.Resolver
+
 		// weightFn calculates the weight of a hostEntry
 		weightFn WeightFunc
 
@@ -101,14 +105,15 @@ func createNode(parent *node, entry *hostEntry) *node {
 // NewHostTree creates a new, empty, HostTree. It takes as arguments a `WeightFunc`,
 // which is used to determine the weight of a node on Insert and the name for the tree
 // which should equal the name of the hostdb profile this tree is created for.
-func NewHostTree(wf WeightFunc, name string) *HostTree {
+func NewHostTree(wf WeightFunc, name string, resolver modules.Resolver) *HostTree {
 	return &HostTree{
 		name: name,
+		hosts: make(map[string]*node),
 		root: &node{
 			count: 1,
 		},
+		resolver: resolver,
 		weightFn: wf,
-		hosts:    make(map[string]*node),
 	}
 }
 
@@ -197,6 +202,11 @@ func (n *node) remove() {
 		current.weight = current.weight.Sub(n.entry.weight)
 		current = current.parent
 	}
+}
+
+// Host returns the address of the HostEntry.
+func (he *hostEntry) Host() string {
+	return he.NetAddress.Host()
 }
 
 // All returns all of the hosts in the host tree, sorted by weight.
@@ -319,24 +329,49 @@ func (ht *HostTree) Select(spk types.SiaPublicKey) (modules.HostDBEntry, bool) {
 	return node.entry.HostDBEntry, true
 }
 
-// SelectRandom grabs a random n hosts from the tree. There will be no repeats, but
-// the length of the slice returned may be less than n, and may even be zero.
-// The hosts that are returned first have the higher priority. Hosts passed to
-// 'ignore' will not be considered; pass `nil` if no blacklist is desired.
-func (ht *HostTree) SelectRandom(n int, ignore []types.SiaPublicKey) []modules.HostDBEntry {
+// SelectRandom grabs a random n hosts from the tree. There will be no repeats,
+// but the length of the slice returned may be less than n, and may even be
+// zero.  The hosts that are returned first have the higher priority. Hosts
+// passed to 'blacklist' will not be considered; pass `nil` if no blacklist is
+// desired. 'addressBlacklist' is similar to 'blacklist' but instead of not
+// considering the hosts in the list, hosts that use the same IP subnet as
+// those hosts will be ignored. In most cases those blacklists contain the same
+// elements but sometimes it is useful to block a host without blocking its IP
+// range.
+func (ht *HostTree) SelectRandom(n int, blacklist, addressBlacklist []types.SiaPublicKey) []modules.HostDBEntry {
+	ht.mu.Lock()
+	defer ht.mu.Unlock()
+
 	var hosts []modules.HostDBEntry
 	var removedEntries []*hostEntry
 
-	// Merge ignore with the host tree's blacklist.
-	ignore = append(ignore, ht.blacklist...)
+	// Merge blacklist with the host tree's blacklist.
+	blacklist = append(blacklist, ht.blacklist...)
 
-	for _, pubkey := range ignore {
+	// Create a filter.
+	filter := NewFilter(ht.resolver)
+
+	// Add the hosts from the addressBlacklist to the filter.
+	for _, pubkey := range blacklist {
 		node, exists := ht.hosts[string(pubkey.Key)]
 		if !exists {
 			continue
 		}
+		// Add the node to the addressFilter.
+		filter.Add(node.entry.NetAddress)
+	}
+	// Remove hosts we want to blacklist from the tree but remember them to make
+	// sure we can insert them later.
+	for _, pubkey := range blacklist {
+		node, exists := ht.hosts[string(pubkey.Key)]
+		if !exists {
+			continue
+		}
+		// Remove the host from the tree.
 		node.remove()
 		delete(ht.hosts, string(pubkey.Key))
+
+		// Remember the host to insert it again later.
 		removedEntries = append(removedEntries, node.entry)
 	}
 
@@ -346,10 +381,15 @@ func (ht *HostTree) SelectRandom(n int, ignore []types.SiaPublicKey) []modules.H
 
 		if node.entry.AcceptingContracts &&
 			len(node.entry.ScanHistory) > 0 &&
-			node.entry.ScanHistory[len(node.entry.ScanHistory)-1].Success {
+			node.entry.ScanHistory[len(node.entry.ScanHistory)-1].Success &&
+			!filter.Filtered(node.entry.NetAddress) {
 			// The host must be online and accepting contracts to be returned
-			// by the random function.
+			// by the random function. It also has to pass the addressFilter
+			// check.
 			hosts = append(hosts, node.entry.HostDBEntry)
+
+			// If the host passed the filter, we add it to the filter.
+			filter.Add(node.entry.NetAddress)
 		}
 
 		removedEntries = append(removedEntries, node.entry)

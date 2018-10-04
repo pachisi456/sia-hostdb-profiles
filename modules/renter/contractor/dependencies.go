@@ -3,9 +3,9 @@ package contractor
 import (
 	"path/filepath"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/persist"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/persist"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // These interfaces define the HostDB's dependencies. Using the smallest
@@ -50,10 +50,11 @@ type (
 	hostDB interface {
 		AllHosts(string) []modules.HostDBEntry
 		ActiveHosts(string) []modules.HostDBEntry
+		CheckForIPViolations([]types.SiaPublicKey) []types.SiaPublicKey
 		Host(types.SiaPublicKey) (modules.HostDBEntry, bool)
 		IncrementSuccessfulInteractions(key types.SiaPublicKey)
 		IncrementFailedInteractions(key types.SiaPublicKey)
-		RandomHosts(tree string, n int, exclude []types.SiaPublicKey) ([]modules.HostDBEntry, error)
+		RandomHosts(tree string, n int, blacklist, addressBlacklist []types.SiaPublicKey) ([]modules.HostDBEntry, error)
 		ScoreBreakdown(modules.HostDBEntry, string) modules.HostScoreBreakdown
 	}
 

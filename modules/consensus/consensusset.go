@@ -9,14 +9,14 @@ package consensus
 import (
 	"errors"
 
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/persist"
-	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/persist"
+	siasync "gitlab.com/NebulousLabs/Sia/sync"
+	"gitlab.com/NebulousLabs/Sia/types"
 
-	"github.com/NebulousLabs/demotemutex"
 	"github.com/coreos/bbolt"
+	"gitlab.com/NebulousLabs/demotemutex"
 )
 
 var (

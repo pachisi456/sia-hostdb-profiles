@@ -3,8 +3,8 @@ package modules
 import (
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // TestConsensusConflict checks that the consensus conflict type is correctly

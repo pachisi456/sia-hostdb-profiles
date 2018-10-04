@@ -3,9 +3,9 @@ package wallet
 import (
 	"math"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
-	"github.com/NebulousLabs/errors"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/NebulousLabs/errors"
 
 	"github.com/coreos/bbolt"
 )

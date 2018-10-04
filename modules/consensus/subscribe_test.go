@@ -4,9 +4,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-
 	bolt "github.com/coreos/bbolt"
+	"gitlab.com/NebulousLabs/Sia/modules"
 )
 
 // mockSubscriber receives and holds changes to the consensus set, remembering

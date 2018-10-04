@@ -4,8 +4,8 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/node/api"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/node/api"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // TestSortByValue tests that byValue sorts contracts correctly.

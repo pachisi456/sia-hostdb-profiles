@@ -3,7 +3,7 @@ package renter
 import (
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"gitlab.com/NebulousLabs/Sia/build"
 )
 
 // managedDropChunk will remove a worker from the responsibility of tracking a chunk.

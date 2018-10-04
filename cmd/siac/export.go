@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/types"
 
 	"github.com/spf13/cobra"
 )

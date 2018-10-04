@@ -10,9 +10,9 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/encoding"
 )
 
 // sanityCheckWriter checks that the bytes written to w exactly match the
@@ -459,6 +459,11 @@ func (fcr *FileContractRevision) UnmarshalSia(r io.Reader) error {
 	return d.Err()
 }
 
+// LoadString loads a FileContractID from a string
+func (fcid *FileContractID) LoadString(str string) error {
+	return (*crypto.Hash)(fcid).LoadString(str)
+}
+
 // MarshalJSON marshals an id as a hex string.
 func (fcid FileContractID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(fcid.String())
@@ -621,8 +626,25 @@ func (spk *SiaPublicKey) LoadString(s string) {
 // String defines how to print a SiaPublicKey - hex is used to keep things
 // compact during logging. The key type prefix and lack of a checksum help to
 // separate it from a sia address.
-func (spk *SiaPublicKey) String() string {
+func (spk SiaPublicKey) String() string {
 	return spk.Algorithm.String() + ":" + fmt.Sprintf("%x", spk.Key)
+}
+
+// UnmarshalJSON unmarshals a SiaPublicKey as JSON.
+func (spk *SiaPublicKey) UnmarshalJSON(b []byte) error {
+	spk.LoadString(string(bytes.Trim(b, `"`)))
+	if spk.Key == nil {
+		// fallback to old (base64) encoding
+		var oldSPK struct {
+			Algorithm Specifier
+			Key       []byte
+		}
+		if err := json.Unmarshal(b, &oldSPK); err != nil {
+			return err
+		}
+		spk.Algorithm, spk.Key = oldSPK.Algorithm, oldSPK.Key
+	}
+	return nil
 }
 
 // MarshalJSON marshals a specifier as a string.

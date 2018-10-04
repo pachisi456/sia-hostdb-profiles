@@ -4,8 +4,8 @@ package consensus
 // compatibility with the test suite.
 
 import (
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/types"
 
 	"github.com/coreos/bbolt"
 )

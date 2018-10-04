@@ -9,12 +9,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 
-	"github.com/NebulousLabs/entropy-mnemonics"
 	"github.com/julienschmidt/httprouter"
+	"gitlab.com/NebulousLabs/entropy-mnemonics"
 )
 
 type (

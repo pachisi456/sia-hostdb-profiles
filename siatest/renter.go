@@ -1,19 +1,18 @@
 package siatest
 
 import (
+	"encoding/hex"
 	"fmt"
-	"math"
 	"path/filepath"
 	"reflect"
-	"strconv"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/node/api"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/node/api"
 
-	"github.com/NebulousLabs/errors"
-	"github.com/NebulousLabs/fastrand"
+	"gitlab.com/NebulousLabs/errors"
+	"gitlab.com/NebulousLabs/fastrand"
 )
 
 // DownloadToDisk downloads a previously uploaded file. The file will be downloaded
@@ -24,14 +23,15 @@ func (tn *TestNode) DownloadToDisk(rf *RemoteFile, async bool) (*LocalFile, erro
 		return nil, errors.AddContext(err, "failed to retrieve FileInfo")
 	}
 	// Create a random destination for the download
-	fileName := strconv.Itoa(fastrand.Intn(math.MaxInt32))
-	dest := filepath.Join(SiaTestingDir, fileName)
+	fileName := fmt.Sprintf("%dbytes %s", fi.Filesize, hex.EncodeToString(fastrand.Bytes(4)))
+	dest := filepath.Join(tn.downloadsDir(), fileName)
 	if err := tn.RenterDownloadGet(rf.siaPath, dest, 0, fi.Filesize, async); err != nil {
 		return nil, errors.AddContext(err, "failed to download file")
 	}
 	// Create the TestFile
 	lf := &LocalFile{
 		path:     dest,
+		size:     int(fi.Filesize),
 		checksum: rf.checksum,
 	}
 	// If we download the file asynchronously we are done
@@ -56,6 +56,12 @@ func (tn *TestNode) DownloadByStream(rf *RemoteFile) (data []byte, err error) {
 		err = errors.New("downloaded bytes don't match requested data")
 	}
 	return
+}
+
+// SetFileRepairPath changes the repair path of a remote file to the provided
+// local file's path.
+func (tn *TestNode) SetFileRepairPath(rf *RemoteFile, lf *LocalFile) error {
+	return tn.RenterSetRepairPathPost(rf.siaPath, lf.path)
 }
 
 // Stream uses the streaming endpoint to download a file.
@@ -186,7 +192,7 @@ func (tn *TestNode) Upload(lf *LocalFile, dataPieces, parityPieces uint64) (*Rem
 // UploadNewFile initiates the upload of a filesize bytes large file.
 func (tn *TestNode) UploadNewFile(filesize int, dataPieces uint64, parityPieces uint64) (*LocalFile, *RemoteFile, error) {
 	// Create file for upload
-	localFile, err := NewFile(filesize)
+	localFile, err := tn.NewFile(filesize)
 	if err != nil {
 		return nil, nil, errors.AddContext(err, "failed to create file")
 	}

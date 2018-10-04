@@ -1,6 +1,6 @@
 package siatest
 
-import "github.com/pachisi456/sia-hostdb-profiles/node"
+import "gitlab.com/NebulousLabs/Sia/node"
 
 var (
 	// MinerTemplate is a template for a Sia node that has a functioning

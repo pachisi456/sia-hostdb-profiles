@@ -3,7 +3,7 @@ package consensus
 import (
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"gitlab.com/NebulousLabs/Sia/modules"
 )
 
 // TestBacktrackToCurrentPath probes the backtrackToCurrentPath method of the

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -254,7 +254,7 @@ func (api *API) hostEstimateScoreGET(w http.ResponseWriter, req *http.Request, _
 	entry := modules.HostDBEntry{}
 	entry.PublicKey = api.host.PublicKey()
 	entry.HostExternalSettings = mergedSettings
-	estimatedScoreBreakdown := api.renter.EstimateHostScore(entry, "default")
+	estimatedScoreBreakdown := api.renter.EstimateHostScore(entry)
 	e := HostEstimateScoreGET{
 		EstimatedScore: estimatedScoreBreakdown.Score,
 		ConversionRate: estimatedScoreBreakdown.ConversionRate,

@@ -19,10 +19,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // rpcSettingsDeprecated is a specifier for a deprecated settings request.
@@ -203,17 +203,9 @@ func (h *Host) initNetworking(address string) (err error) {
 		}
 		defer h.tg.Done()
 
-		err = h.managedForwardPort(port)
+		err = h.g.ForwardPort(port)
 		if err != nil {
 			h.log.Println("ERROR: failed to forward port:", err)
-		} else {
-			// Clear the port that was forwarded at startup.
-			h.tg.OnStop(func() {
-				err := h.managedClearPort()
-				if err != nil {
-					h.log.Println("ERROR: failed to clear port:", err)
-				}
-			})
 		}
 
 		threadedUpdateHostnameClosedChan := make(chan struct{})

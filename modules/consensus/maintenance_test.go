@@ -6,8 +6,8 @@ import (
 
 	"github.com/coreos/bbolt"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // TestApplyMinerPayouts probes the applyMinerPayouts method of the consensus

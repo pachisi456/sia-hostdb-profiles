@@ -5,13 +5,13 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
-	"github.com/NebulousLabs/ratelimit"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/NebulousLabs/ratelimit"
 
-	"github.com/NebulousLabs/errors"
-	"github.com/NebulousLabs/writeaheadlog"
+	"gitlab.com/NebulousLabs/errors"
+	"gitlab.com/NebulousLabs/writeaheadlog"
 )
 
 // A ContractSet provides safe concurrent access to a set of contracts. Its

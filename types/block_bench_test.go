@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
+	"gitlab.com/NebulousLabs/Sia/encoding"
 )
 
 // BenchmarkEncodeEmptyBlock benchmarks encoding an empty block.

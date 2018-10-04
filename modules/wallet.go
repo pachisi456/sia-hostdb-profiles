@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"errors"
 
-	"github.com/NebulousLabs/entropy-mnemonics"
+	"gitlab.com/NebulousLabs/entropy-mnemonics"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 const (

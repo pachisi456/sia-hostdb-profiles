@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"sync"
-	"sync/atomic"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/modules"
 
-	"github.com/NebulousLabs/errors"
+	"gitlab.com/NebulousLabs/errors"
 )
 
 // downloadPieceInfo contains all the information required to download and
@@ -229,7 +228,6 @@ func (udc *unfinishedDownloadChunk) threadedRecoverLogicalData() error {
 	udc.download.mu.Lock()
 	defer udc.download.mu.Unlock()
 	udc.download.chunksRemaining--
-	atomic.AddUint64(&udc.download.atomicDataReceived, udc.staticFetchLength)
 	if udc.download.chunksRemaining == 0 {
 		// Download is complete, send out a notification and close the
 		// destination writer.

@@ -4,8 +4,8 @@ package consensus
 import (
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // TestApplySiacoinInputs probes the applySiacoinInputs method of the consensus

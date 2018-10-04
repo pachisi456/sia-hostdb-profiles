@@ -3,8 +3,8 @@ package client
 import (
 	"fmt"
 
-	"github.com/pachisi456/sia-hostdb-profiles/node/api"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/node/api"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // ConsensusGet requests the /consensus api resource

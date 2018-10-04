@@ -1,6 +1,6 @@
 package consensus
 
-import "github.com/pachisi456/sia-hostdb-profiles/modules"
+import "gitlab.com/NebulousLabs/Sia/modules"
 
 type (
 	// dependencySleepAfterInitializeSubscribe is a dependency used to make the consensusSet sleep for a few seconds after calling managedInitializeSubscribe.

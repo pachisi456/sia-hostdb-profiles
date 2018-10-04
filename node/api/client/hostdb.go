@@ -1,12 +1,12 @@
 package client
 
 import (
-	"net/url"
-
-	"github.com/pachisi456/sia-hostdb-profiles/node/api"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
+    "net/url"
 	"strings"
+
+	"gitlab.com/NebulousLabs/Sia/node/api"
+	"gitlab.com/NebulousLabs/Sia/modules/renter/hostdb/hostdbprofile"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 // HostDbGet requests the /hostdb endpoint's resources.

@@ -5,13 +5,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/consensus"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/gateway"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/transactionpool"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/wallet"
-	"github.com/pachisi456/sia-hostdb-profiles/persist"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/modules/consensus"
+	"gitlab.com/NebulousLabs/Sia/modules/gateway"
+	"gitlab.com/NebulousLabs/Sia/modules/transactionpool"
+	"gitlab.com/NebulousLabs/Sia/modules/wallet"
+	"gitlab.com/NebulousLabs/Sia/persist"
 )
 
 const (
@@ -44,7 +44,7 @@ func loadExistingHostWithNewDeps(modulesDir, hostDir string) (modules.Host, erro
 	}
 
 	// Create the host.
-	h, err := newHost(modules.ProdDependencies, cs, tp, w, "localhost:0", hostDir)
+	h, err := newHost(modules.ProdDependencies, cs, g, tp, w, "localhost:0", hostDir)
 	if err != nil {
 		return nil, err
 	}

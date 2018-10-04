@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 var errUnableToParseSize = errors.New("unable to parse size")

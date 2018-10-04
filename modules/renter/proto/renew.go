@@ -3,12 +3,12 @@ package proto
 import (
 	"net"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
 
-	"github.com/NebulousLabs/errors"
+	"gitlab.com/NebulousLabs/errors"
 )
 
 // Renew negotiates a new contract for data already stored with a host, and
@@ -134,11 +134,11 @@ func (cs *ContractSet) Renew(oldContract *SafeContract, params ContractParams, t
 		return modules.RenterContract{}, errors.New("couldn't initiate RPC: " + err.Error())
 	}
 	// verify that both parties are renewing the same contract
-	if err = verifyRecentRevision(conn, contract, host.Version); err != nil {
-		// don't add context; want to preserve the original error type so that
-		// callers can check using IsRevisionMismatch
+	err = verifyRecentRevision(conn, oldContract, host.Version)
+	if err != nil {
 		return modules.RenterContract{}, err
 	}
+
 	// verify the host's settings and confirm its identity
 	host, err = verifySettings(conn, host)
 	if err != nil {

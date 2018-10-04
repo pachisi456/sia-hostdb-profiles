@@ -8,7 +8,7 @@ package renter
 import (
 	"sync"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"gitlab.com/NebulousLabs/Sia/build"
 )
 
 // memoryManager can handle requests for memory and returns of memory. The

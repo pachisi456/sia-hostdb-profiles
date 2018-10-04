@@ -6,11 +6,11 @@ import (
 	"net"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
-	"github.com/NebulousLabs/fastrand"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/NebulousLabs/fastrand"
 )
 
 var (
@@ -184,7 +184,7 @@ func (g *Gateway) requestNodes(conn modules.PeerConn) error {
 		}
 	}
 	if changed {
-		err := g.saveSync()
+		err := g.saveSyncNodes()
 		if err != nil {
 			g.log.Println("ERROR: unable to save new nodes added to the gateway:", err)
 		}

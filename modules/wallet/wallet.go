@@ -11,16 +11,15 @@ import (
 
 	"github.com/coreos/bbolt"
 
-	"github.com/pachisi456/sia-hostdb-profiles/build"
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/persist"
-	siasync "github.com/pachisi456/sia-hostdb-profiles/sync"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
-
-	"github.com/NebulousLabs/errors"
-	"github.com/NebulousLabs/threadgroup"
+	"gitlab.com/NebulousLabs/Sia/build"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/encoding"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/persist"
+	siasync "gitlab.com/NebulousLabs/Sia/sync"
+	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/NebulousLabs/errors"
+	"gitlab.com/NebulousLabs/threadgroup"
 )
 
 const (
@@ -169,25 +168,6 @@ func NewCustomWallet(cs modules.ConsensusSet, tpool modules.TransactionPool, per
 	err := w.initPersist()
 	if err != nil {
 		return nil, err
-	}
-
-	// begin the initial transaction
-	w.dbTx, err = w.db.Begin(true)
-	if err != nil {
-		w.log.Critical("ERROR: failed to start database update:", err)
-	}
-
-	// COMPATv131 we need to create the bucketProcessedTxnIndex if it doesn't exist
-	if w.dbTx.Bucket(bucketProcessedTransactions).Stats().KeyN > 0 &&
-		w.dbTx.Bucket(bucketProcessedTxnIndex).Stats().KeyN == 0 {
-		err = initProcessedTxnIndex(w.dbTx)
-		if err != nil {
-			return nil, err
-		}
-		// Save changes to disk
-		if err = w.syncDB(); err != nil {
-			return nil, err
-		}
 	}
 	return w, nil
 }

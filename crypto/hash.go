@@ -13,7 +13,7 @@ import (
 	"errors"
 	"hash"
 
-	"github.com/pachisi456/sia-hostdb-profiles/encoding"
+	"gitlab.com/NebulousLabs/Sia/encoding"
 
 	"golang.org/x/crypto/blake2b"
 )

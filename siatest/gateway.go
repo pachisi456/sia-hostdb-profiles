@@ -1,7 +1,7 @@
 package siatest
 
 import (
-	"github.com/pachisi456/sia-hostdb-profiles/build"
+	"gitlab.com/NebulousLabs/Sia/build"
 )
 
 // hasPeer checks if peer is a peer of tn.

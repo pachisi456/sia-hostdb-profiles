@@ -1,9 +1,9 @@
 package client
 
 import (
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/node/api"
-	"github.com/NebulousLabs/errors"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/node/api"
+	"gitlab.com/NebulousLabs/errors"
 )
 
 var (

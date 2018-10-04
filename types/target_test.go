@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
+	"gitlab.com/NebulousLabs/Sia/crypto"
 )
 
 // TestTargetAdd probes the Add function of the target type.

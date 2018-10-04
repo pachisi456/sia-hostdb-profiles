@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
+	"gitlab.com/NebulousLabs/Sia/modules"
 
 	"github.com/julienschmidt/httprouter"
 )

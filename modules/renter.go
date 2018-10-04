@@ -5,11 +5,11 @@ import (
 	"io"
 	"time"
 
-	"github.com/pachisi456/sia-hostdb-profiles/crypto"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
-	"github.com/pachisi456/sia-hostdb-profiles/modules/renter/hostdb/hostdbprofile"
+	"gitlab.com/NebulousLabs/Sia/crypto"
+	"gitlab.com/NebulousLabs/Sia/types"
+	"gitlab.com/NebulousLabs/Sia/modules/renter/hostdb/hostdbprofile"
 
-	"github.com/NebulousLabs/errors"
+	"gitlab.com/NebulousLabs/errors"
 )
 
 // ErrHostFault is an error that is usually extended to indicate that an error
@@ -113,6 +113,8 @@ type FileInfo struct {
 	UploadedBytes  uint64            `json:"uploadedbytes"`
 	UploadProgress float64           `json:"uploadprogress"`
 	Expiration     types.BlockHeight `json:"expiration"`
+	OnDisk         bool              `json:"ondisk"`
+	Recoverable    bool              `json:"recoverable"`
 }
 
 // A HostDBEntry represents one host entry in the Renter's host DB. It
@@ -135,12 +137,17 @@ type HostDBEntry struct {
 	HistoricUptime   time.Duration `json:"historicuptime"`
 	ScanHistory      HostDBScans   `json:"scanhistory"`
 
+	// Measurements that are taken whenever we interact with a host.
 	HistoricFailedInteractions     float64 `json:"historicfailedinteractions"`
 	HistoricSuccessfulInteractions float64 `json:"historicsuccessfulinteractions"`
 	RecentFailedInteractions       float64 `json:"recentfailedinteractions"`
 	RecentSuccessfulInteractions   float64 `json:"recentsuccessfulinteractions"`
 
 	LastHistoricUpdate types.BlockHeight
+
+	// Measurements related to the IP subnet mask.
+	IPNets          []string
+	LastIPNetChange time.Time
 
 	// The public key of the host, stored separately to minimize risk of certain
 	// MitM based vulnerabilities.
@@ -339,6 +346,9 @@ type Renter interface {
 	// Close closes the Renter.
 	Close() error
 
+	// CancelContract cancels a specific contract of the renter.
+	CancelContract(id types.FileContractID) error
+
 	// ConfigHostDBProfiles updates the provided setting of the hostdb profile with the
 	// provided name to the provided value. All parameters are checked for validity.
 	ConfigHostDBProfiles(name, setting, value string) (err error)
@@ -392,7 +402,7 @@ type Renter interface {
 
 	// HostDBProfiles returns the map of set hostdb profiles.
 	HostDBProfiles() map[string]*hostdbprofile.HostDBProfile
-	
+
 	// InitialScanComplete returns a boolean indicating if the initial scan of the
 	// hostdb is completed.
 	InitialScanComplete() (bool, error)
@@ -425,6 +435,10 @@ type Renter interface {
 
 	// SetSettings sets the Renter's settings.
 	SetSettings(RenterSettings) error
+
+	// SetFileTrackingPath sets the on-disk location of an uploaded file to a
+	// new value. Useful if files need to be moved on disk.
+	SetFileTrackingPath(siaPath, newPath string) error
 
 	// ShareFiles creates a '.sia' file that can be shared with others.
 	ShareFiles(paths []string, shareDest string) error

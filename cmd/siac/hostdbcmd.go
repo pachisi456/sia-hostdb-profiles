@@ -8,9 +8,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/pachisi456/sia-hostdb-profiles/modules"
-	"github.com/pachisi456/sia-hostdb-profiles/node/api"
-	"github.com/pachisi456/sia-hostdb-profiles/types"
+	"gitlab.com/NebulousLabs/Sia/modules"
+	"gitlab.com/NebulousLabs/Sia/node/api"
+	"gitlab.com/NebulousLabs/Sia/types"
 )
 
 const scanHistoryLen = 30
@@ -53,7 +53,7 @@ profile your file should be uploaded.
 
 [storagetier] is a parameter to set preference for either price or
 performance. You can choose between "cold", "warm" and "hot". "cold"
-will pick cheap hosts with less performance while "hot" will pick 
+will pick cheap hosts with less performance while "hot" will pick
 high-performance but more expensive hosts. "warm" is the default setting
 and makes a reasonable compromise between price and performance.
 `,
@@ -68,7 +68,7 @@ and makes a reasonable compromise between price and performance.
 Add to the command the [name] of the profile you want to edit and the
 [setting] ("storagetier", "addlocation" or "removelocation") you want to edit.
 
-For the [value] of "storagetier" you can choose between "cold", "warm" and 
+For the [value] of "storagetier" you can choose between "cold", "warm" and
 "hot". "cold" will pick cheap hosts with less performance while "hot" will
 pick high-performance but more expensive hosts. "warm" is the default setting
 and makes a reasonable compromise between price and performance.
