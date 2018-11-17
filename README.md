@@ -1,3 +1,5 @@
+This project has been moved to [GitLab](https://gitlab.com/pachisi456/Sia).
+
 # Customizable Host Selection for Sia
 
 In the context of a bachelor thesis the [official Sia
